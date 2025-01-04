@@ -13,7 +13,7 @@ interface Blob {
   noiseOffset: number;
 }
 
-const POINTS_NUMBER = 12; // Number of points to create the blob shape
+const POINTS_NUMBER = 24; // Increased number of points for smoother waves
 
 const Background = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,7 +46,7 @@ const Background = () => {
       {
         centerX: dimensions.width, // Top right
         centerY: 0,
-        radius: 400,
+        radius: 450,
         points: [],
         noiseOffset: 1000
       },
@@ -76,14 +76,19 @@ const Background = () => {
     const draw = () => {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
-      ctx.filter = 'blur(50px)';
+      ctx.filter = 'blur(100px)';
 
       blobs.forEach(blob => {
-        // Update points positions with wave effect
+        // Update points positions with enhanced wave effect
         blob.points.forEach((point, i) => {
           const angle = (i / POINTS_NUMBER) * Math.PI * 2;
-          const waveX = Math.sin(time * 0.001 + blob.noiseOffset + i) * 30;
-          const waveY = Math.cos(time * 0.001 + blob.noiseOffset + i) * 30;
+          
+          // More complex wave pattern
+          const waveX = Math.sin(time * 0.001 + blob.noiseOffset + i * 0.5) * 80 +
+                       Math.cos(time * 0.002 - i * 0.3) * 40;
+          const waveY = Math.cos(time * 0.001 + blob.noiseOffset + i * 0.5) * 80 +
+                       Math.sin(time * 0.002 - i * 0.3) * 40;
+          
           point.x = blob.centerX + Math.cos(angle) * (blob.radius + waveX);
           point.y = blob.centerY + Math.sin(angle) * (blob.radius + waveY);
         });
@@ -103,7 +108,7 @@ const Background = () => {
           ctx.quadraticCurveTo(point.x, point.y, xc, yc);
         }
 
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.fillStyle = 'rgba(245, 233, 165, 0.20)';
         ctx.fill();
       });
 
