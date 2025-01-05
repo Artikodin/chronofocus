@@ -4,8 +4,9 @@ interface Props {
   size?: number;
   dotCount?: number;
   dotSize?: number;
-  completion?: number;
+  duration?: number;
   isResetting?: boolean;
+  isPlaying?: boolean;
   onReset?: () => void;
 }
 
@@ -14,10 +15,10 @@ interface AnimatedDot {
   y: number;
   originalX: number;
   originalY: number;
-  velocity: { x: number; y: number };
   opacity: number;
   progress: number;
   index: number;
+  visible: boolean;
 }
 
 // Add easing function
@@ -33,14 +34,37 @@ const CountDownCircle = ({
   size = 400,
   dotCount = 60,
   dotSize = 2,
-  completion = 0,
+  duration = 0,
   isResetting = false,
+  isPlaying = false,
   onReset,
 }: Props) => {
+  const isPlayingRef = useRef(isPlaying);
+  const isResettingRef = useRef(isResetting);
+  const animationState = useRef({
+    startTime: 0,
+  });
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dotsRef = useRef<AnimatedDot[]>([]);
   const animationFrameRef = useRef<number>();
+  const resetStartRef = useRef<number | null>(null);
   const resetStartTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+
+    if (isPlaying) {
+      animationState.current.startTime = performance.now();
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (isResetting) {
+      isResettingRef.current = true;
+      resetStartTimeRef.current = performance.now();
+    }
+  }, [isResetting]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -51,7 +75,7 @@ const CountDownCircle = ({
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = (size - dotSize * 30) / 2;
+    const radius = (size - dotSize - 50) / 2;
 
     // Initialize dots if not already done
     if (dotsRef.current.length === 0) {
@@ -65,38 +89,70 @@ const CountDownCircle = ({
           y,
           originalX: x,
           originalY: y,
-          velocity: { x: 0, y: 0 },
           opacity: 1,
           progress: 0,
+          visible: true,
           index: i,
         };
       });
     }
 
-    const normalizedCompletion = Math.min(100, Math.max(0, completion));
-    const dotsToHide = Math.floor((normalizedCompletion / 100) * dotCount);
-    let resetProgress = normalizedCompletion / 100;
-    let dotsToShow = 0;
+    ctx.clearRect(0, 0, size, size);
+    dotsRef.current.forEach((dot) => {
+      // Draw glow (always at original position)
+      ctx.beginPath();
+      ctx.arc(dot.originalX, dot.originalY, dotSize * 3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, 0.2)`;
+      ctx.fill();
 
-    const draw = () => {
+      // Draw main dot (at animated position)
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, dotSize, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${dot.opacity})`;
+      ctx.fill();
+    });
+
+    const draw = (timestamp: number) => {
+      if (!isPlayingRef.current) {
+        animationFrameRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
       ctx.clearRect(0, 0, size, size);
 
-      if (isResetting) {
-        resetProgress = Math.min(1, resetProgress + 0.02);
-        const resetCompletion = easeOutCubic(resetProgress) * 100;
-        dotsToShow = Math.floor(dotCount - (resetCompletion / 100) * dotCount);
-        if (resetCompletion === 100) {
-          setTimeout(() => {
-            onReset?.();
-            resetProgress = 0;
-            dotsToShow = 0;
-          }, 1000);
+      const elapsed = timestamp - animationState.current.startTime;
+      const durationMillis = duration * 1000;
+      let completion = Math.min(100, (elapsed / durationMillis) * 100);
+      console.log('completion', completion);
+
+      if (isResettingRef.current) {
+        // Store the completion where reset started
+        if (resetStartRef.current === null) {
+          resetStartRef.current = completion;
+        }
+
+        // Calculate reset progress (going from stored completion back to 0)
+        const resetElapsed = timestamp - resetStartTimeRef.current;
+        const resetDuration = 1000; // 1 second for reset animation
+        const resetProgress = Math.min(1, resetElapsed / resetDuration);
+
+        // Linear interpolation from stored completion to 0
+        completion = resetStartRef.current * (1 - resetProgress);
+
+        const resetDone = dotsRef.current.every((dot) => dot.progress === 0);
+        // Reset is done
+        if (resetDone) {
+          isResettingRef.current = false;
+          resetStartRef.current = null;
+          onReset?.();
         }
       }
 
+      const dotsToHide = Math.floor((completion / 100) * dotCount);
+
       dotsRef.current.forEach((dot) => {
-        if (isResetting && (dot.x !== dot.originalX || dot.y !== dot.originalY)) {
-          if (dot.index >= dotsToShow) {
+        if (isResettingRef.current && !dot.visible) {
+          if (dot.index >= dotsToHide) {
             // Update progress
             dot.progress = Math.max(0, dot.progress - 0.02);
             const easedProgress = easeOutCubic(dot.progress);
@@ -105,10 +161,8 @@ const CountDownCircle = ({
             const angle = Math.atan2(dot.originalY - centerY, dot.originalX - centerX);
 
             // Apply movement based on progress
-            const distance = Math.hypot(
-                dot.x - dot.originalX,
-                dot.y - dot.originalY
-            ) * easedProgress;
+            const distance =
+              Math.hypot(dot.x - dot.originalX, dot.y - dot.originalY) * easedProgress;
             dot.x = dot.originalX + Math.cos(angle) * distance;
             dot.y = dot.originalY + Math.sin(angle) * distance;
 
@@ -117,7 +171,7 @@ const CountDownCircle = ({
           }
         }
 
-        if (dot.index < dotsToHide && dot.progress < 1 && !isResetting) {
+        if (dot.opacity > 0 && dot.index <= dotsToHide && !isResettingRef.current) {
           // Update progress
           dot.progress = Math.min(1, dot.progress + 0.02);
           const easedProgress = easeInCubic(dot.progress);
@@ -132,6 +186,7 @@ const CountDownCircle = ({
 
           // Derive opacity from progress
           dot.opacity = 1 - easedProgress;
+          dot.visible = false;
         }
 
         // Draw glow (always at original position)
@@ -150,20 +205,14 @@ const CountDownCircle = ({
       animationFrameRef.current = requestAnimationFrame(draw);
     };
 
-    draw();
+    draw(performance.now());
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [size, dotCount, dotSize, completion, isResetting]);
-
-  useEffect(() => {
-    if (isResetting) {
-      resetStartTimeRef.current = performance.now();
-    }
-  }, [isResetting]);
+  }, [duration]);
 
   return <canvas ref={canvasRef} width={size} height={size} className="relative" />;
 };
