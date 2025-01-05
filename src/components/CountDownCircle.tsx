@@ -105,7 +105,10 @@ const CountDownCircle = ({
             const angle = Math.atan2(dot.originalY - centerY, dot.originalX - centerX);
 
             // Apply movement based on progress
-            const distance = 50 * easedProgress;
+            const distance = Math.hypot(
+                dot.x - dot.originalX,
+                dot.y - dot.originalY
+            ) * easedProgress;
             dot.x = dot.originalX + Math.cos(angle) * distance;
             dot.y = dot.originalY + Math.sin(angle) * distance;
 
