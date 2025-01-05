@@ -123,7 +123,6 @@ const CountDownCircle = ({
       const elapsed = timestamp - animationState.current.startTime;
       const durationMillis = duration * 1000;
       let completion = Math.min(100, (elapsed / durationMillis) * 100);
-      console.log('completion', completion);
 
       if (isResettingRef.current) {
         // Store the completion where reset started
