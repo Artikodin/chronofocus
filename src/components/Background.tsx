@@ -103,10 +103,10 @@ const Background = () => {
 
           // More complex wave pattern
           const waveX =
-            Math.sin(time * 0.001 + blob.noiseOffset + i * 0.5) * 80 +
+            Math.sin(time * 0.002 + blob.noiseOffset + i * 0.9) * 80 +
             Math.cos(time * 0.002 - i * 0.3) * 40;
           const waveY =
-            Math.cos(time * 0.001 + blob.noiseOffset + i * 0.5) * 80 +
+            Math.cos(time * 0.002 + blob.noiseOffset + i * 0.9) * 80 +
             Math.sin(time * 0.002 - i * 0.3) * 40;
 
           point.x = blob.centerX + Math.cos(angle) * (blob.radius + waveX);
@@ -127,8 +127,21 @@ const Background = () => {
 
           ctx.quadraticCurveTo(point.x, point.y, xc, yc);
         }
+        // Create a radial gradient
+        const grad = ctx.createRadialGradient(
+          blob.centerX,
+          blob.centerY,
+          blob.radius * 0.3,
+          blob.centerX,
+          blob.centerY,
+          blob.radius * 1.2
+        );
+        grad.addColorStop(0, 'rgba(227, 234, 189, 0.7)'); // center
+        grad.addColorStop(0.5, 'rgba(149, 166, 54, 0.7)');
+        grad.addColorStop(1, '#0f0f76');
 
-        ctx.fillStyle = 'rgba(245, 233, 165, 0.20)';
+        ctx.fillStyle = grad;
+
         ctx.fill();
       });
 
