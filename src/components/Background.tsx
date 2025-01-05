@@ -136,9 +136,9 @@ const Background = () => {
           blob.centerY,
           blob.radius * 1.2
         );
-        grad.addColorStop(0, 'rgba(227, 234, 189, 0.7)'); // center
-        grad.addColorStop(0.5, 'rgba(149, 166, 54, 0.7)');
-        grad.addColorStop(1, '#0f0f76');
+        grad.addColorStop(0, 'rgba(122, 202, 234, 0.7)'); // center
+        grad.addColorStop(0.5, 'rgba(198, 80, 84, 0.7)');
+        grad.addColorStop(1, '#11119b');
 
         ctx.fillStyle = grad;
 
