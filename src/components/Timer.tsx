@@ -26,7 +26,6 @@ export default function Timer() {
     if (/^\d$/.test(e.key)) {
       setTime((prev) => {
         if (prev.length >= 6) {
-          console.log('prev', prev.slice(1, 6));
           return prev.slice(1, 6) + e.key;
         }
         return prev + e.key;
@@ -36,9 +35,39 @@ export default function Timer() {
 
   const formatted = formatTimeInput(time);
 
+  const handleAddTime = (time: number) => () => {
+    setTime((prev) => {
+      const hours = +prev.slice(0, -4);
+      const minutes = +prev.slice(2, -2);
+      const seconds = +prev.slice(-2);
+
+      const _newMinutes = minutes + time;
+
+      if (_newMinutes >= 60) {
+        const newHours = hours + 1 > 99 ? 1 : hours + 1;
+        const newMinutes = _newMinutes % 60;
+
+        const paddedHours = newHours.toString().padStart(2, '0');
+        const paddedMinutes = newMinutes.toString().padStart(2, '0');
+        const paddedSeconds = seconds.toString().padStart(2, '0');
+
+        return `${paddedHours}${paddedMinutes}${paddedSeconds}`;
+      }
+
+      const paddedHours = hours.toString().padStart(2, '0');
+      const paddedMinutes = _newMinutes.toString().padStart(2, '0');
+      const paddedSeconds = seconds.toString().padStart(2, '0');
+
+      return `${paddedHours}${paddedMinutes}${paddedSeconds}`;
+    });
+  };
+
   return (
     <div>
       <input type="text" value={formatted} onKeyDown={handleTimeInput} />
+      <button onClick={handleAddTime(1)}>+1:00</button>
+      <button onClick={handleAddTime(10)}>+10:00</button>
+      <button onClick={handleAddTime(15)}>+15:00</button>
     </div>
   );
 }
