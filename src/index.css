@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Then use it in your styles */
+body {
+  font-family: 'Maname', sans-serif;
+}
