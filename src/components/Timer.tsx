@@ -2,20 +2,33 @@ import { useState } from 'react';
 
 export default function Timer() {
   const [time, setTime] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
-  const formatTimeInput = (value: string) => {
-    // Pad with zeros if needed (up to 6 digits)
+  const formatRawInput = (value: string) => {
     const padded = value.padStart(6, '0');
-    // Split into hours, minutes, seconds
+
     const hours = padded.substring(0, 2);
     const minutes = padded.substring(2, 4);
     const seconds = padded.substring(4, 6);
 
-    // Return formatted string
     return `${hours}:${minutes}:${seconds}`;
   };
 
-  // In your component
+  const formatTimerInput = (value: string) => {
+    const hours = +value.slice(0, -4);
+    const minutes = +value.slice(2, -2);
+    const seconds = +value.slice(-2);
+
+    const cappedMinutes = minutes > 59 ? 59 : minutes;
+    const cappedSeconds = seconds > 59 ? 59 : seconds;
+
+    const paddedHours = hours.toString().padStart(2, '0');
+    const paddedMinutes = cappedMinutes.toString().padStart(2, '0');
+    const paddedSeconds = cappedSeconds.toString().padStart(2, '0');
+
+    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  };
+
   const handleTimeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
       setTime((prev) => prev.slice(0, -1));
@@ -32,8 +45,6 @@ export default function Timer() {
       });
     }
   };
-
-  const formatted = formatTimeInput(time);
 
   const handleAddTime = (time: number) => () => {
     setTime((prev) => {
@@ -62,9 +73,19 @@ export default function Timer() {
     });
   };
 
+  const formattedRaw = formatRawInput(time);
+  const formattedTimer = formatTimerInput(time);
+
   return (
     <div>
-      <input type="text" value={formatted} onKeyDown={handleTimeInput} />
+      <div>{time}</div>
+      <input
+        type="text"
+        value={isFocused ? formattedRaw : formattedTimer}
+        onKeyDown={handleTimeInput}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
       <button onClick={handleAddTime(1)}>+1:00</button>
       <button onClick={handleAddTime(10)}>+10:00</button>
       <button onClick={handleAddTime(15)}>+15:00</button>
