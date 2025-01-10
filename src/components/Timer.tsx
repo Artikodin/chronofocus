@@ -1,33 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const formatRawInput = (value: string) => {
+  const padded = value.padStart(6, '0');
+
+  const hours = padded.substring(0, 2);
+  const minutes = padded.substring(2, 4);
+  const seconds = padded.substring(4, 6);
+
+  return `${hours}:${minutes}:${seconds}`;
+};
+
+const formatTimerRunning = (value: string, elapsedMs: number) => {
+  const hours = +value.slice(0, -4);
+  const minutes = +value.slice(2, -2);
+  const seconds = +value.slice(-2);
+
+  const cappedMinutes = minutes > 59 ? 59 : minutes;
+  const cappedSeconds = seconds > 59 ? 59 : seconds;
+
+  const elapsedHours = Math.floor(elapsedMs / 3600000);
+  const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
+  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000);
+
+  const paddedHours = (hours - elapsedHours).toString().padStart(2, '0');
+  const paddedMinutes = (cappedMinutes - elapsedMinutes).toString().padStart(2, '0');
+  const paddedSeconds = (cappedSeconds - elapsedSeconds).toString().padStart(2, '0');
+
+  return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+};
 
 export default function Timer() {
   const [time, setTime] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [renderTime, setRenderTime] = useState<number | null>(null);
+  const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
 
-  const formatRawInput = (value: string) => {
-    const padded = value.padStart(6, '0');
+  useEffect(() => {
+    let intervalId: number;
 
-    const hours = padded.substring(0, 2);
-    const minutes = padded.substring(2, 4);
-    const seconds = padded.substring(4, 6);
+    if (startTime !== null) {
+      intervalId = setInterval(() => {
+        setRenderTime(Date.now());
+      }, 500);
+    }
 
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
-  const formatTimerInput = (value: string) => {
-    const hours = +value.slice(0, -4);
-    const minutes = +value.slice(2, -2);
-    const seconds = +value.slice(-2);
-
-    const cappedMinutes = minutes > 59 ? 59 : minutes;
-    const cappedSeconds = seconds > 59 ? 59 : seconds;
-
-    const paddedHours = hours.toString().padStart(2, '0');
-    const paddedMinutes = cappedMinutes.toString().padStart(2, '0');
-    const paddedSeconds = cappedSeconds.toString().padStart(2, '0');
-
-    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-  };
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [startTime]);
 
   const handleTimeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -73,12 +94,31 @@ export default function Timer() {
     });
   };
 
+  const handleStart = () => {
+    setStartTime(Date.now());
+  };
+
+  const handleStop = () => {
+    if (!startTime) return;
+
+    const currentElapsed = Date.now() - startTime;
+    setAccumulatedTime((prev) => prev + currentElapsed);
+    setStartTime(null);
+  };
+
+  const handleReset = () => {
+    setStartTime(null);
+    setAccumulatedTime(0);
+  };
+
+  const elapsedMs = startTime ? Date.now() - startTime + accumulatedTime : accumulatedTime;
+
   const formattedRaw = formatRawInput(time);
-  const formattedTimer = formatTimerInput(time);
+  const formattedTimer = formatTimerRunning(time, elapsedMs);
 
   return (
     <div>
-      <div>{time}</div>
+      <div>{elapsedMs}</div>
       <input
         type="text"
         value={isFocused ? formattedRaw : formattedTimer}
@@ -86,9 +126,17 @@ export default function Timer() {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
-      <button onClick={handleAddTime(1)}>+1:00</button>
-      <button onClick={handleAddTime(10)}>+10:00</button>
-      <button onClick={handleAddTime(15)}>+15:00</button>
+      <div>
+        <button onClick={handleAddTime(1)}>+1:00</button>
+        <button onClick={handleAddTime(10)}>+10:00</button>
+        <button onClick={handleAddTime(15)}>+15:00</button>
+      </div>
+
+      <div>
+        <button onClick={handleStart}>start</button>
+        <button onClick={handleStop}>stop</button>
+        <button onClick={handleReset}>reset</button>
+      </div>
     </div>
   );
 }
