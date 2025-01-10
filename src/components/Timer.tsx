@@ -1,5 +1,28 @@
 import { useState, useEffect } from 'react';
 
+const parseHHMMSStringToMs = (value: string) => {
+  const padded = value.padStart(6, '0');
+  const hours = +padded.slice(0, -4);
+  const minutes = +padded.slice(2, -2);
+  const seconds = +padded.slice(-2);
+
+  const cappedMinutes = Math.min(59, minutes);
+  const cappedSeconds = Math.min(59, seconds);
+
+  return (hours * 3600 + cappedMinutes * 60 + cappedSeconds) * 1000;
+};
+
+function formatMsToHHMMSS(millisecond: number) {
+  const safeMs = Math.max(0, millisecond);
+
+  const totalSeconds = Math.floor(safeMs / 1000);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+
+  return `${hours}${minutes}${seconds}`;
+}
+
 const formatRawInput = (value: string) => {
   const padded = value.padStart(6, '0');
 
@@ -11,30 +34,11 @@ const formatRawInput = (value: string) => {
 };
 
 const formatTimerRunning = (value: string, elapsedMs: number) => {
-  const hours = +value.slice(0, -4);
-  const minutes = +value.slice(2, -2);
-  const seconds = +value.slice(-2);
+  const timerMS = parseHHMMSStringToMs(value);
+  const newTimerMs = timerMS - elapsedMs;
+  const timerHHMMSS = formatMsToHHMMSS(newTimerMs);
 
-  const cappedMinutes = minutes > 59 ? 59 : minutes;
-  const cappedSeconds = seconds > 59 ? 59 : seconds;
-
-  const elapsedHours = Math.floor(elapsedMs / 3600000);
-  const elapsedMinutes = Math.floor((elapsedMs % 3600000) / 60000);
-  const elapsedSeconds = Math.floor((elapsedMs % 60000) / 1000);
-
-  const paddedHours = (hours - elapsedHours).toString().padStart(2, '0');
-  const paddedMinutes = (cappedMinutes - elapsedMinutes).toString().padStart(2, '0');
-  const paddedSeconds = (cappedSeconds - elapsedSeconds).toString().padStart(2, '0');
-
-  return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
-};
-
-const convertHHMMSSStringToMs = (value: string) => {
-  const hours = +value.slice(0, -4);
-  const minutes = +value.slice(2, -2);
-  const seconds = +value.slice(-2);
-
-  return hours * 3600000 + minutes * 60000 + seconds * 1000;
+  return formatRawInput(timerHHMMSS);
 };
 
 export default function Timer() {
@@ -125,7 +129,7 @@ export default function Timer() {
   const formattedRaw = formatRawInput(time);
   const formattedTimer = formatTimerRunning(time, elapsedMs);
 
-  const totalMs = convertHHMMSSStringToMs(time);
+  const totalMs = parseHHMMSStringToMs(time);
   const remainingMs = totalMs - elapsedMs;
 
   useEffect(() => {
