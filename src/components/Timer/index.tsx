@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+
+import CountDownCircle from '../CountDownCircle';
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 
 export default function Timer() {
@@ -100,8 +102,8 @@ export default function Timer() {
   }, [remainingMs, startTime]);
 
   return (
-    <div>
-      <div>{elapsedMs}</div>
+    <div className="flex flex-col items-center justify-center gap-8">
+      <div className="text-white">{elapsedMs}</div>
       <input
         type="text"
         value={isFocused ? formattedRaw : formattedTimer}
@@ -109,17 +111,23 @@ export default function Timer() {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
-      <div>
+      <div className=" bg-white">
         <button onClick={handleAddTime(1)}>+1:00</button>
         <button onClick={handleAddTime(10)}>+10:00</button>
         <button onClick={handleAddTime(15)}>+15:00</button>
       </div>
 
-      <div>
+      <div className=" bg-white">
         <button onClick={handleStart}>start</button>
         <button onClick={handleStop}>stop</button>
         <button onClick={handleReset}>reset</button>
       </div>
+      <CountDownCircle
+        duration={totalMs}
+        isResetting={false}
+        isPlaying={Boolean(startTime)}
+        onReset={handleReset}
+      />
     </div>
   );
 }
