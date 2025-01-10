@@ -49,7 +49,8 @@ export default function Timer() {
 
       if (_newMinutes >= 60) {
         const newHours = hours + 1 > 99 ? 1 : hours + 1;
-        const newMinutes = _newMinutes % 60;
+        const cappedMinutes = Math.min(60, _newMinutes);
+        const newMinutes = cappedMinutes % 60;
 
         const paddedHours = newHours.toString().padStart(2, '0');
         const paddedMinutes = newMinutes.toString().padStart(2, '0');
