@@ -29,6 +29,14 @@ const formatTimerRunning = (value: string, elapsedMs: number) => {
   return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
 };
 
+const convertHHMMSSStringToMs = (value: string) => {
+  const hours = +value.slice(0, -4);
+  const minutes = +value.slice(2, -2);
+  const seconds = +value.slice(-2);
+
+  return hours * 3600000 + minutes * 60000 + seconds * 1000;
+};
+
 export default function Timer() {
   const [time, setTime] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -95,6 +103,7 @@ export default function Timer() {
   };
 
   const handleStart = () => {
+    if (remainingMs <= 0) return;
     setStartTime(Date.now());
   };
 
@@ -115,6 +124,15 @@ export default function Timer() {
 
   const formattedRaw = formatRawInput(time);
   const formattedTimer = formatTimerRunning(time, elapsedMs);
+
+  const totalMs = convertHHMMSSStringToMs(time);
+  const remainingMs = totalMs - elapsedMs;
+
+  useEffect(() => {
+    if (startTime !== null && remainingMs <= 0) {
+      handleStop();
+    }
+  }, [remainingMs, startTime]);
 
   return (
     <div>
