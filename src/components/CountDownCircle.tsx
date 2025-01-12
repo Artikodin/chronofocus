@@ -91,12 +91,12 @@ class Dot {
 class Circle {
   dots: Dot[];
   radius: number;
-  angle: number;
   progress: number;
   centerX: number;
   centerY: number;
   dotCount: number;
-  constructor(dotCount: number, radius: number, angle: number, centerX: number, centerY: number) {
+
+  constructor(dotCount: number, radius: number, centerX: number, centerY: number) {
     this.dots = Array.from({ length: dotCount }, (_, i) => {
       const angle = (i / dotCount) * Math.PI * 2 - Math.PI / 2;
       const x = centerX + Math.cos(angle) * radius;
@@ -107,7 +107,6 @@ class Circle {
     this.centerX = centerX;
     this.centerY = centerY;
     this.radius = radius;
-    this.angle = angle;
     this.progress = 0;
   }
 
@@ -117,8 +116,8 @@ class Circle {
     });
   }
 
-  update(delta: number, options: { angle: number; distance: number; duration: number }) {
-    const { angle, distance, duration } = options;
+  update(delta: number, options: { duration: number }) {
+    const { duration } = options;
 
     this.progress = this.progress + delta / duration;
     this.progress = Math.min(1, this.progress);
@@ -133,14 +132,41 @@ class Circle {
       }
     });
   }
+
+  updateReset(delta: number, options: { duration: number }) {
+    const { duration } = options;
+
+    this.progress = this.progress - delta / duration;
+    this.progress = Math.max(0, this.progress);
+
+    const dotToShow = Math.floor(this.progress * this.dotCount);
+
+    this.dots.forEach((dot) => {
+      const angle = Math.atan2(dot.originalY - this.centerY, dot.originalX - this.centerX);
+
+      if (dotToShow <= dot.index) {
+        dot.updateReset(delta, { angle, duration: 1 });
+      }
+    });
+  }
 }
 
-const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 60 }: Props) => {
+const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 3 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dotsRef = useRef<Dot[]>([]);
   const animationFrameRef = useRef<number>();
   const previousTimestampRef = useRef<number>(0);
-  const progressRef = useRef<number>(0);
+  const resetRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const interval = setTimeout(
+      () => {
+        resetRef.current = true;
+      },
+      (duration + 1) * 1000
+    );
+
+    return () => clearInterval(interval);
+  }, [duration]);
 
   useEffect(() => {
     previousTimestampRef.current = 0;
@@ -152,22 +178,11 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 6
 
     const centerX = size / 2;
     const centerY = size / 2;
+    const circle = new Circle(dotCount, radius, centerX, centerY);
 
-    if (dotsRef.current.length === 0) {
-      dotsRef.current = Array.from({ length: dotCount }, (_, i) => {
-        const angle = (i / dotCount) * Math.PI * 2 - Math.PI / 2;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * radius;
-        return new Dot(x, y, i);
-      });
-    }
+    circle.draw(ctx);
 
-    ctx.clearRect(0, 0, size, size);
-    dotsRef.current.forEach((dot) => {
-      dot.draw(ctx);
-    });
-
-    const draw = (timestamp: number) => {
+    const update = (timestamp: number) => {
       if (!previousTimestampRef.current) {
         previousTimestampRef.current = timestamp;
       }
@@ -177,27 +192,20 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 6
       const deltaMs = timestamp - previousTimestampRef.current;
       const delta = deltaMs / 1000;
 
-      progressRef.current = progressRef.current + delta / duration;
-      progressRef.current = Math.min(1, progressRef.current);
+      if (!resetRef.current) {
+        circle.update(delta, { duration });
+      } else {
+        circle.updateReset(delta, { duration: 2 });
+      }
 
-      const dotToHide = Math.floor(progressRef.current * dotCount);
-
-      dotsRef.current.forEach((dot) => {
-        const angle = Math.atan2(dot.originalY - centerY, dot.originalX - centerX);
-
-        if (dotToHide >= dot.index) {
-          dot.update(delta, { angle, distance: 40, duration: 1 });
-        }
-
-        dot.draw(ctx);
-      });
+      circle.draw(ctx);
 
       previousTimestampRef.current = timestamp;
 
-      animationFrameRef.current = requestAnimationFrame(draw);
+      animationFrameRef.current = requestAnimationFrame(update);
     };
 
-    draw(performance.now());
+    update(performance.now());
 
     return () => {
       if (animationFrameRef.current) {
