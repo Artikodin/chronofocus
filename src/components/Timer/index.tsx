@@ -7,15 +7,15 @@ export default function Timer() {
   const [time, setTime] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [renderTime, setRenderTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
+  const [renderTime, setRenderTime] = useState<number | null>(null);
 
   useEffect(() => {
     let intervalId: number;
 
     if (startTime !== null) {
       intervalId = setInterval(() => {
-        setRenderTime(Date.now());
+        setRenderTime(performance.now());
       }, 500);
     }
 
@@ -71,13 +71,13 @@ export default function Timer() {
 
   const handleStart = () => {
     if (remainingMs <= 0) return;
-    setStartTime(Date.now());
+    setStartTime(performance.now());
   };
 
   const handleStop = () => {
     if (!startTime) return;
 
-    const currentElapsed = Date.now() - startTime;
+    const currentElapsed = performance.now() - startTime;
     setAccumulatedTime((prev) => prev + currentElapsed);
     setStartTime(null);
   };
@@ -87,7 +87,7 @@ export default function Timer() {
     setAccumulatedTime(0);
   };
 
-  const elapsedMs = startTime ? Date.now() - startTime + accumulatedTime : accumulatedTime;
+  const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
 
   const formattedRaw = formatRawInput(time);
   const formattedTimer = formatTimerRunning(time, elapsedMs);
@@ -111,23 +111,18 @@ export default function Timer() {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
-      <div className=" bg-white">
+      <div className="bg-white">
         <button onClick={handleAddTime(1)}>+1:00</button>
         <button onClick={handleAddTime(10)}>+10:00</button>
         <button onClick={handleAddTime(15)}>+15:00</button>
       </div>
 
-      <div className=" bg-white">
+      <div className="bg-white">
         <button onClick={handleStart}>start</button>
         <button onClick={handleStop}>stop</button>
         <button onClick={handleReset}>reset</button>
       </div>
-      <CountDownCircle
-        duration={totalMs}
-        isResetting={false}
-        isPlaying={Boolean(startTime)}
-        onReset={handleReset}
-      />
+      <CountDownCircle />
     </div>
   );
 }
