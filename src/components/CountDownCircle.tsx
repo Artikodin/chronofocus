@@ -95,6 +95,7 @@ class Circle {
   centerX: number;
   centerY: number;
   dotCount: number;
+  resetRAF?: number;
 
   constructor(dotCount: number, radius: number, centerX: number, centerY: number) {
     this.dots = Array.from({ length: dotCount }, (_, i) => {
@@ -153,7 +154,6 @@ class Circle {
   reset(options: { ctx: CanvasRenderingContext2D }) {
     const { ctx } = options;
 
-    let animationFrame: number | undefined;
     let previousTimestamp: number;
 
     const loop = (timestamp: number) => {
@@ -171,13 +171,13 @@ class Circle {
 
       previousTimestamp = timestamp;
 
-      animationFrame = requestAnimationFrame(loop);
+      this.resetRAF = requestAnimationFrame(loop);
 
       if (this.dots.every((dot) => dot.visible)) {
         console.log('reset', this.progress);
 
-        if (!animationFrame) return;
-        cancelAnimationFrame(animationFrame);
+        if (!this.resetRAF) return;
+        cancelAnimationFrame(this.resetRAF);
       }
     };
 
@@ -235,6 +235,9 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 1
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (circleRef.current?.resetRAF) {
+        cancelAnimationFrame(circleRef.current.resetRAF);
       }
     };
   }, [duration]);
