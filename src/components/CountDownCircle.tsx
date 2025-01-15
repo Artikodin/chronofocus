@@ -149,63 +149,88 @@ class Circle {
       }
     });
   }
+
+  reset(options: { ctx: CanvasRenderingContext2D }) {
+    const { ctx } = options;
+
+    let animationFrame: number | undefined;
+    let previousTimestamp: number;
+
+    const loop = (timestamp: number) => {
+      if (!previousTimestamp) {
+        previousTimestamp = timestamp;
+      }
+
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      const deltaMs = timestamp - previousTimestamp;
+      const delta = deltaMs / 1000;
+
+      this.updateReset(delta, { duration: 2 });
+      this.draw(ctx);
+
+      previousTimestamp = timestamp;
+
+      animationFrame = requestAnimationFrame(loop);
+
+      if (this.dots.every((dot) => dot.visible)) {
+        console.log('reset', this.progress);
+
+        if (!animationFrame) return;
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+
+    requestAnimationFrame(loop);
+  }
 }
 
-const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 3 }: Props) => {
+const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 10 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number>();
   const previousTimestampRef = useRef<number>(0);
-  const resetRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    const interval = setTimeout(
-      () => {
-        resetRef.current = true;
-      },
-      (duration + 1) * 1000
-    );
-
-    return () => clearInterval(interval);
-  }, [duration]);
+  const loopRef = useRef<FrameRequestCallback>();
+  const pausedAtRef = useRef<number>(0);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const circleRef = useRef<Circle | null>(null);
+  const isRunningRef = useRef<boolean>(false);
 
   useEffect(() => {
     previousTimestampRef.current = 0;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    ctxRef.current = canvas.getContext('2d');
+    if (!ctxRef?.current) return;
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const circle = new Circle(dotCount, radius, centerX, centerY);
+    circleRef.current = new Circle(dotCount, radius, centerX, centerY);
 
-    circle.draw(ctx);
+    ctxRef.current.clearRect(0, 0, size, size);
+    circleRef.current.draw(ctxRef.current);
 
-    const update = (timestamp: number) => {
+    loopRef.current = (timestamp: number) => {
+      if (!ctxRef?.current) return;
+      if (!circleRef.current) return;
+      if (!loopRef.current) return;
       if (!previousTimestampRef.current) {
         previousTimestampRef.current = timestamp;
       }
 
-      ctx.clearRect(0, 0, size, size);
+      ctxRef.current.clearRect(0, 0, size, size);
 
       const deltaMs = timestamp - previousTimestampRef.current;
       const delta = deltaMs / 1000;
 
-      if (!resetRef.current) {
-        circle.update(delta, { duration });
-      } else {
-        circle.updateReset(delta, { duration: 2 });
-      }
+      circleRef.current.update(delta, { duration });
 
-      circle.draw(ctx);
+      circleRef.current.draw(ctxRef.current);
 
       previousTimestampRef.current = timestamp;
 
-      animationFrameRef.current = requestAnimationFrame(update);
+      animationFrameRef.current = requestAnimationFrame(loopRef.current);
     };
-
-    update(performance.now());
 
     return () => {
       if (animationFrameRef.current) {
@@ -214,7 +239,47 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 3
     };
   }, [duration]);
 
-  return <canvas ref={canvasRef} width={size} height={size} className="relative" />;
+  const handleStart = () => {
+    if (isRunningRef.current) return;
+    if (!loopRef.current) return;
+    previousTimestampRef.current += performance.now() - pausedAtRef.current;
+    requestAnimationFrame(loopRef.current);
+    isRunningRef.current = true;
+  };
+
+  const handleStop = () => {
+    if (!isRunningRef.current) return;
+    if (!animationFrameRef.current) return;
+    cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = undefined;
+    pausedAtRef.current = performance.now();
+    isRunningRef.current = false;
+  };
+
+  const handleReset = () => {
+    if (!circleRef.current) return;
+    if (!ctxRef.current) return;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      previousTimestampRef.current = 0;
+      pausedAtRef.current = 0;
+    }
+
+    circleRef.current.reset({ ctx: ctxRef.current });
+    isRunningRef.current = false;
+  };
+
+  return (
+    <>
+      <canvas ref={canvasRef} width={size} height={size} className="relative" />
+      <div className="bg-white/50">
+        <button onClick={handleStart}>Start</button>
+        <button onClick={handleStop}>Stop</button>
+        <button onClick={handleReset}>Reset</button>
+      </div>
+    </>
+  );
 };
 
 export default CountDownCircle;
