@@ -158,15 +158,31 @@ const useAnimation = (
   reset: (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => void
 ) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
-  const previousTimestampRef = useRef<number>(0);
-  const loopRef = useRef<FrameRequestCallback>();
-  const pausedAtRef = useRef<number>(0);
-  const isRunningRef = useRef<boolean>(false);
-  const isResettingRef = useRef<boolean>(false);
+
+  const loop = useRef<FrameRequestCallback>();
+
+  type Animation = {
+    animationFrameRef: number | null;
+    pauseAt: number;
+    previousTimestamp: number;
+    isRunning: boolean;
+    isResetting: boolean;
+  };
+
+  const initialAnimation: Animation = {
+    animationFrameRef: null,
+    pauseAt: 0,
+    previousTimestamp: 0,
+    isRunning: false,
+    isResetting: false,
+  };
+
+  const resetAnimation: Animation = { ...initialAnimation };
+
+  const animation = useRef<Animation>(initialAnimation);
 
   useEffect(() => {
-    previousTimestampRef.current = 0;
+    animation.current.previousTimestamp = 0;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -178,72 +194,70 @@ const useAnimation = (
     draw(ctx);
 
     const cancelRAF = () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        previousTimestampRef.current = 0;
-        pausedAtRef.current = 0;
-        isResettingRef.current = false;
-        isRunningRef.current = false;
+      if (animation.current.animationFrameRef) {
+        cancelAnimationFrame(animation.current.animationFrameRef);
+        animation.current = { ...resetAnimation };
       }
     };
 
-    loopRef.current = (timestamp: number) => {
-      if (!loopRef.current) return;
-      if (!previousTimestampRef.current) {
-        previousTimestampRef.current = timestamp;
+    loop.current = (timestamp: number) => {
+      if (!loop.current) return;
+      if (!animation.current.previousTimestamp) {
+        animation.current.previousTimestamp = timestamp;
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const deltaMs = timestamp - previousTimestampRef.current;
+      const deltaMs = timestamp - animation.current.previousTimestamp;
       const delta = deltaMs / 1000;
 
-      if (isResettingRef.current) {
+      if (animation.current.isResetting) {
         reset(delta, ctx, cancelRAF);
       } else {
         update(delta, ctx);
       }
 
-      if (!isRunningRef.current) return;
-      previousTimestampRef.current = timestamp;
-      animationFrameRef.current = requestAnimationFrame(loopRef.current);
+      if (!animation.current.isRunning) return;
+      animation.current.previousTimestamp = timestamp;
+      animation.current.animationFrameRef = requestAnimationFrame(loop.current);
     };
 
     return () => {
-      if (!animationFrameRef.current) return;
-      cancelAnimationFrame(animationFrameRef.current);
+      if (!animation.current.animationFrameRef) return;
+      cancelAnimationFrame(animation.current.animationFrameRef);
     };
   }, []);
 
-  const handleStart = () => {
-    if (isRunningRef.current) return;
-    if (!loopRef.current) return;
-    previousTimestampRef.current += performance.now() - pausedAtRef.current;
-    requestAnimationFrame(loopRef.current);
-    isRunningRef.current = true;
+  const run = () => {
+    if (!loop.current) return;
+    animation.current.previousTimestamp += performance.now() - animation.current.pauseAt;
+    requestAnimationFrame(loop.current);
+    animation.current.isRunning = true;
+  };
 
-    if (!isResettingRef.current) return;
-    isResettingRef.current = false;
+  const handleStart = () => {
+    if (animation.current.isRunning) return;
+    run();
+
+    if (animation.current.isResetting) return;
+    animation.current.isResetting = false;
   };
 
   const handleStop = () => {
-    if (!isRunningRef.current) return;
-    if (!animationFrameRef.current) return;
-    cancelAnimationFrame(animationFrameRef.current);
-    animationFrameRef.current = undefined;
-    pausedAtRef.current = performance.now();
-    isRunningRef.current = false;
+    if (!animation.current.isRunning) return;
+    if (!animation.current.animationFrameRef) return;
+    cancelAnimationFrame(animation.current.animationFrameRef);
+    animation.current.animationFrameRef = null;
+    animation.current.pauseAt = performance.now();
+    animation.current.isRunning = false;
   };
 
   const handleReset = () => {
-    if (isResettingRef.current) return;
-    isResettingRef.current = true;
+    if (animation.current.isResetting) return;
+    animation.current.isResetting = true;
 
-    if (!isRunningRef.current) {
-      if (!loopRef.current) return;
-      previousTimestampRef.current += performance.now() - pausedAtRef.current;
-      requestAnimationFrame(loopRef.current);
-      isRunningRef.current = true;
+    if (!animation.current.isRunning) {
+      run();
     }
   };
 
@@ -258,7 +272,7 @@ const useAnimation = (
 const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 10 }: Props) => {
   const centerX = size / 2;
   const centerY = size / 2;
-  const circleRef = useRef<Circle>(new Circle(dotCount, radius, centerX, centerY));
+  const circleRef = useRef(new Circle(dotCount, radius, centerX, centerY));
 
   const draw = useCallback((ctx: CanvasRenderingContext2D) => {
     circleRef.current.draw(ctx);
@@ -266,8 +280,6 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 1
 
   const update = useCallback(
     (delta: number, ctx: CanvasRenderingContext2D) => {
-      if (!circleRef.current) return;
-
       circleRef.current.update(delta, { duration });
 
       circleRef.current.draw(ctx);
@@ -277,8 +289,6 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 1
 
   const reset = useCallback(
     (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => {
-      if (!circleRef.current) return;
-
       circleRef.current.updateReset(delta, { duration: 2 });
 
       circleRef.current.draw(ctx);
