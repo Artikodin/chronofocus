@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface Props {
   size?: number;
@@ -150,43 +150,9 @@ class Circle {
       }
     });
   }
-
-  reset(options: { ctx: CanvasRenderingContext2D }) {
-    const { ctx } = options;
-
-    let previousTimestamp: number;
-
-    const loop = (timestamp: number) => {
-      if (!previousTimestamp) {
-        previousTimestamp = timestamp;
-      }
-
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-      const deltaMs = timestamp - previousTimestamp;
-      const delta = deltaMs / 1000;
-
-      this.updateReset(delta, { duration: 2 });
-      this.draw(ctx);
-
-      previousTimestamp = timestamp;
-
-      this.resetRAF = requestAnimationFrame(loop);
-
-      if (this.dots.every((dot) => dot.visible)) {
-        console.log('reset', this.progress);
-
-        if (!this.resetRAF) return;
-        cancelAnimationFrame(this.resetRAF);
-      }
-    };
-
-    requestAnimationFrame(loop);
-  }
 }
 
 const useAnimation = (
-  duration: number,
   draw: (ctx: CanvasRenderingContext2D) => void,
   update: (delta: number, ctx: CanvasRenderingContext2D) => void,
   reset: (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => void
@@ -247,7 +213,7 @@ const useAnimation = (
       if (!animationFrameRef.current) return;
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [duration]);
+  }, []);
 
   const handleStart = () => {
     if (isRunningRef.current) return;
@@ -294,36 +260,37 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 1
   const centerY = size / 2;
   const circleRef = useRef<Circle>(new Circle(dotCount, radius, centerX, centerY));
 
-  const draw = (ctx: CanvasRenderingContext2D) => {
+  const draw = useCallback((ctx: CanvasRenderingContext2D) => {
     circleRef.current.draw(ctx);
-  };
+  }, []);
 
-  const update = (delta: number, ctx: CanvasRenderingContext2D) => {
-    if (!circleRef.current) return;
+  const update = useCallback(
+    (delta: number, ctx: CanvasRenderingContext2D) => {
+      if (!circleRef.current) return;
 
-    circleRef.current.update(delta, { duration });
+      circleRef.current.update(delta, { duration });
 
-    circleRef.current.draw(ctx);
-  };
-
-  const reset = (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => {
-    if (!circleRef.current) return;
-
-    circleRef.current.updateReset(delta, { duration: 2 });
-
-    circleRef.current.draw(ctx);
-
-    if (circleRef.current.dots.every((dot) => dot.visible)) {
-      cancelRAF();
-    }
-  };
-
-  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(
-    duration,
-    draw,
-    update,
-    reset
+      circleRef.current.draw(ctx);
+    },
+    [duration]
   );
+
+  const reset = useCallback(
+    (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => {
+      if (!circleRef.current) return;
+
+      circleRef.current.updateReset(delta, { duration: 2 });
+
+      circleRef.current.draw(ctx);
+
+      if (circleRef.current.dots.every((dot) => dot.visible)) {
+        cancelRAF();
+      }
+    },
+    []
+  );
+
+  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(draw, update, reset);
 
   return (
     <>
