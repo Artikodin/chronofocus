@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { useAnimation } from '../hooks/useAnimation';
 import { Circle } from '../objects/Circle';
 import { parseHHMMSStringToMs } from './Timer/utils';
@@ -9,14 +9,21 @@ type Props = {
   dotCount?: number;
   radius?: number;
   duration?: number;
+  time: string;
+  setTime: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60 }: Props) => {
+export const TimerAnimated = ({
+  size = 400,
+  radius = 150,
+  dotCount = 60,
+  time,
+  setTime,
+}: Props) => {
   const centerX = size / 2;
   const centerY = size / 2;
   const circleRef = useRef(new Circle(dotCount, radius, centerX, centerY));
 
-  const [time, setTime] = useState('');
   const durationMs = parseHHMMSStringToMs(time);
   const duration = durationMs / 1000;
 
@@ -46,7 +53,12 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60 }: Props) => 
     []
   );
 
-  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(draw, update, reset, duration);
+  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(
+    draw,
+    update,
+    reset,
+    duration
+  );
 
   return (
     <>
@@ -63,5 +75,3 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60 }: Props) => 
     </>
   );
 };
-
-export default CountDownCircle;

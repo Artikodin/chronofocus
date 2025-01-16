@@ -95,6 +95,7 @@ export const useAnimation = (
   const handleStop = () => {
     if (!animation.current.isRunning) return;
     if (!animation.current.animationFrameRef) return;
+
     cancelAnimationFrame(animation.current.animationFrameRef);
     animation.current.animationFrameRef = null;
     animation.current.pauseAt = performance.now();

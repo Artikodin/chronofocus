@@ -75,6 +75,14 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
     });
   };
 
+  const pause = () => {
+    if (!startTime) return;
+
+    const currentElapsed = performance.now() - startTime;
+    setAccumulatedTime((prev) => prev + currentElapsed);
+    setStartTime(null);
+  };
+
   const handleStart = () => {
     if (remainingMs <= 0) return;
     setStartTime(performance.now());
@@ -82,11 +90,7 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
   };
 
   const handleStop = () => {
-    if (!startTime) return;
-
-    const currentElapsed = performance.now() - startTime;
-    setAccumulatedTime((prev) => prev + currentElapsed);
-    setStartTime(null);
+    pause();
     onStop();
   };
 
@@ -106,7 +110,7 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
 
   useEffect(() => {
     if (startTime !== null && remainingMs <= 0) {
-      handleStop();
+      pause();
     }
   }, [remainingMs, startTime]);
 
