@@ -1,6 +1,8 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useAnimation } from '../hooks/useAnimation';
 import { Circle } from '../objects/Circle';
+import { parseHHMMSStringToMs } from './Timer/utils';
+import Timer from './Timer';
 
 type Props = {
   size?: number;
@@ -9,10 +11,14 @@ type Props = {
   duration?: number;
 };
 
-const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 10 }: Props) => {
+const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60 }: Props) => {
   const centerX = size / 2;
   const centerY = size / 2;
   const circleRef = useRef(new Circle(dotCount, radius, centerX, centerY));
+
+  const [time, setTime] = useState('');
+  const durationMs = parseHHMMSStringToMs(time);
+  const duration = durationMs / 1000;
 
   const draw = useCallback((ctx: CanvasRenderingContext2D) => {
     circleRef.current.draw(ctx);
@@ -40,15 +46,19 @@ const CountDownCircle = ({ size = 400, radius = 150, dotCount = 60, duration = 1
     []
   );
 
-  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(draw, update, reset);
+  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(draw, update, reset, duration);
 
   return (
     <>
       <canvas ref={canvasRef} width={size} height={size} className="relative" />
       <div className="bg-white/50">
-        <button onClick={handleStart}>Start</button>
-        <button onClick={handleStop}>Stop</button>
-        <button onClick={handleReset}>Reset</button>
+        <Timer
+          time={time}
+          setTime={setTime}
+          onStart={handleStart}
+          onStop={handleStop}
+          onReset={handleReset}
+        />
       </div>
     </>
   );

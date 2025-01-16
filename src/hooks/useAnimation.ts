@@ -3,7 +3,8 @@ import { useEffect, useRef } from 'react';
 export const useAnimation = (
   draw: (ctx: CanvasRenderingContext2D) => void,
   update: (delta: number, ctx: CanvasRenderingContext2D) => void,
-  reset: (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => void
+  reset: (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => void,
+  duration: number
 ) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -74,7 +75,7 @@ export const useAnimation = (
       if (!animation.current.animationFrameRef) return;
       cancelAnimationFrame(animation.current.animationFrameRef);
     };
-  }, []);
+  }, [duration]);
 
   const run = () => {
     if (!loop.current) return;

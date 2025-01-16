@@ -1,10 +1,10 @@
 import Background from './components/Background';
-import Timer from './components/Timer';
+import CountDownCircle from './components/CountDownCircle';
 
 function App() {
   return (
     <>
-      <Timer />
+      <CountDownCircle />
       <Background />
     </>
   );

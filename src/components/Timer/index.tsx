@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 
-import CountDownCircle from '../CountDownCircle';
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 
-export default function Timer() {
-  const [time, setTime] = useState('');
+type Props = {
+  time: string;
+  setTime: React.Dispatch<React.SetStateAction<string>>;
+  onStart: () => void;
+  onStop: () => void;
+  onReset: () => void;
+};
+
+export default function Timer({ time, setTime, onStart, onStop, onReset }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
@@ -72,6 +78,7 @@ export default function Timer() {
   const handleStart = () => {
     if (remainingMs <= 0) return;
     setStartTime(performance.now());
+    onStart();
   };
 
   const handleStop = () => {
@@ -80,11 +87,13 @@ export default function Timer() {
     const currentElapsed = performance.now() - startTime;
     setAccumulatedTime((prev) => prev + currentElapsed);
     setStartTime(null);
+    onStop();
   };
 
   const handleReset = () => {
     setStartTime(null);
     setAccumulatedTime(0);
+    onReset();
   };
 
   const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
@@ -122,7 +131,6 @@ export default function Timer() {
         <button onClick={handleStop}>stop</button>
         <button onClick={handleReset}>reset</button>
       </div>
-      <CountDownCircle />
     </div>
   );
 }
