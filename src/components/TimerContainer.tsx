@@ -20,32 +20,6 @@ export const TimerContainer = ({ time: _time, setTimes, index, onNew }: Props) =
     window.location.href = `#${index}`;
   }, [index]);
 
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.99,
-    };
-
-    const callback = (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting) {
-        const target = entries[0].target;
-        const _index = target.id;
-        console.log(_index);
-        window.location.href = `#${_index}`;
-      }
-    };
-
-    const observer = new IntersectionObserver(callback, options);
-
-    if (!timerRef.current) return;
-    observer.observe(timerRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   return (
     <div
       className="h-screen w-screen snap-start border-2 border-red-500"

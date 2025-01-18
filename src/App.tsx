@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import Background from './components/Background';
 import { TimerContainer } from './components/TimerContainer';
 
@@ -17,6 +17,46 @@ function App() {
     setTimes((prevTimes) => {
       const newTimes = [...prevTimes];
       newTimes.push('000500');
+      return newTimes;
+    });
+  }, []);
+
+  useEffect(() => {
+    let timeoutId: number;
+
+    const handleScroll = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      timeoutId = setTimeout(() => {
+        const scrollPosition = window.scrollY;
+        const viewportHeight = window.innerHeight;
+        const index = Math.round(scrollPosition / viewportHeight);
+
+        const shownIndex = +window.location.hash.replace('#', '');
+
+        if (shownIndex !== index) {
+          window.location.href = `#${index}`;
+        }
+      }, 150);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
+  const handleRemoveFirst = useCallback(() => {
+    setTimes((prevTimes) => {
+      if (prevTimes.length <= 1) return prevTimes;
+      const newTimes = [...prevTimes];
+      newTimes.shift();
       return newTimes;
     });
   }, []);
@@ -46,6 +86,8 @@ function App() {
               </a>
             );
           })}
+
+        <button onClick={handleRemoveFirst}>Remove first</button>
       </div>
       <Background />
     </>

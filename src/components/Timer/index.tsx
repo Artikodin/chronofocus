@@ -10,6 +10,20 @@ type Props = {
   onReset: () => void;
 };
 
+const useHashChange = (callback: () => void) => {
+  useEffect(() => {
+    const handleHashChange = () => {
+      callback();
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [callback]);
+};
+
 export default function Timer({ time, setTime, onStart, onStop, onReset }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -99,6 +113,8 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
     setAccumulatedTime(0);
     onReset();
   };
+
+  useHashChange(handleReset);
 
   const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
 
