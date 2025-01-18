@@ -36,5 +36,19 @@ export const formatTimerRunning = (value: string, elapsedMs: number) => {
   const newTimerMs = timerMS - elapsedMs;
   const timerHHMMSS = formatMsToHHMMSS(newTimerMs);
 
-  return formatRawInput(timerHHMMSS);
+  const padded = timerHHMMSS.padStart(6, '0');
+
+  const hours = padded.substring(0, 2);
+  const minutes = padded.substring(2, 4);
+  const seconds = padded.substring(4, 6);
+
+  if (hours === '00' && minutes === '00') {
+    return `${seconds}`;
+  }
+
+  if (hours === '00') {
+    return `${minutes}:${seconds}`;
+  }
+
+  return `${hours}:${minutes}:${seconds}`;
 };
