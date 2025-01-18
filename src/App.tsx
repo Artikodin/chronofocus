@@ -42,7 +42,6 @@ function App() {
         const id = times[index].id;
 
         if (shownId !== id) {
-          console.log('scroll', id);
           window.location.href = `#${id}`;
         }
       }, 150);
@@ -58,12 +57,26 @@ function App() {
     };
   }, [times]);
 
-  const handleRemoveById = useCallback((id: string) => {
-    setTimes((prevTimes) => {
-      if (prevTimes.length <= 1) return prevTimes;
-      return prevTimes.filter((time) => time.id !== id);
-    });
-  }, []);
+  const handleRemoveById = useCallback(
+    (id: string) => {
+      if (times.length <= 1) return;
+
+      const index = times.findIndex((time) => time.id === id);
+      const length = times.length;
+      if (index === length - 1) {
+        window.location.href = `#${times[index - 1].id}`;
+      } else {
+        window.location.href = `#${times[index + 1].id}`;
+      }
+      setTimeout(() => {
+        setTimes((prevTimes) => {
+          if (prevTimes.length <= 1) return prevTimes;
+          return prevTimes.filter((time) => time.id !== id);
+        });
+      }, 800);
+    },
+    [times]
+  );
 
   const hasMultipleTimes = times.length > 1;
 
