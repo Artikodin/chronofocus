@@ -11,6 +11,7 @@ type Props = {
   duration?: number;
   time: string;
   setTime: React.Dispatch<React.SetStateAction<string>>;
+  currentId: string;
 };
 
 export const TimerAnimated = ({
@@ -19,6 +20,7 @@ export const TimerAnimated = ({
   dotCount = 60,
   time,
   setTime,
+  currentId,
 }: Props) => {
   const centerX = size / 2;
   const centerY = size / 2;
@@ -70,6 +72,7 @@ export const TimerAnimated = ({
           onStart={handleStart}
           onStop={handleStop}
           onReset={handleReset}
+          currentId={currentId}
         />
       </div>
     </>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
-import { useHashChange } from '../../hooks/useHashchange';
 
 type Props = {
   time: string;
@@ -9,11 +8,10 @@ type Props = {
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
+  currentId: string;
 };
 
-
-
-export default function Timer({ time, setTime, onStart, onStop, onReset }: Props) {
+export default function Timer({ time, setTime, onStart, onStop, onReset, currentId }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
@@ -103,7 +101,9 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
     onReset();
   };
 
-  useHashChange(handleReset);
+  useEffect(() => {
+    handleReset();
+  }, [currentId]);
 
   const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
 

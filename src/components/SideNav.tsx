@@ -1,16 +1,14 @@
-import { useHashChange } from '../hooks/useHashchange';
 import { Time } from '../App';
 import { formatTimerRunning } from './Timer/utils';
 
 type Props = {
   times: Time[];
+  currentId: string;
 };
 
-const Item = ({ time }: { time: Time }) => {
-  const { id } = useHashChange();
-
+const Item = ({ time, currentId }: { time: Time; currentId: string }) => {
   // [TODO]: why this makes delete animation not work?
-  const isActive = id === time.id;
+  const isActive = currentId === time.id;
 
   const formattedTime = formatTimerRunning(time.time, 0);
 
@@ -25,7 +23,7 @@ const Item = ({ time }: { time: Time }) => {
   );
 };
 
-export const SideNav = ({ times }: Props) => {
+export const SideNav = ({ times, currentId }: Props) => {
   const hasMultipleTimes = times.length > 1;
 
   if (!hasMultipleTimes) return null;
@@ -33,7 +31,7 @@ export const SideNav = ({ times }: Props) => {
   return (
     <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col gap-1">
       {times.map((time) => {
-        return <Item key={time.id} time={time} />;
+        return <Item key={time.id} time={time} currentId={currentId} />;
       })}
     </div>
   );
