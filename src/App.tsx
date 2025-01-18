@@ -1,14 +1,18 @@
 import { useCallback, useState, useEffect } from 'react';
 import Background from './components/Background';
 import { TimerContainer } from './components/TimerContainer';
+import { v4 as uuidv4 } from 'uuid';
 
 function App() {
-  const [times, setTimes] = useState<string[]>(['001000']);
+  const [times, setTimes] = useState<Array<{ time: string; id: string }>>([
+    { time: '001000', id: uuidv4() },
+  ]);
 
-  const handleSetTime = useCallback((index: number, time: string) => {
+  const handleSetTime = useCallback((id: string, time: string) => {
     setTimes((prevTimes) => {
       const newTimes = [...prevTimes];
-      newTimes[index] = time;
+      const index = newTimes.findIndex((time) => time.id === id);
+      newTimes[index].time = time;
       return newTimes;
     });
   }, []);
@@ -16,7 +20,7 @@ function App() {
   const handleNew = useCallback(() => {
     setTimes((prevTimes) => {
       const newTimes = [...prevTimes];
-      newTimes.push('000500');
+      newTimes.push({ time: '000500', id: uuidv4() });
       return newTimes;
     });
   }, []);
@@ -34,10 +38,12 @@ function App() {
         const viewportHeight = window.innerHeight;
         const index = Math.round(scrollPosition / viewportHeight);
 
-        const shownIndex = +window.location.hash.replace('#', '');
+        const shownId = window.location.hash.replace('#', '');
+        const id = times[index].id;
 
-        if (shownIndex !== index) {
-          window.location.href = `#${index}`;
+        if (shownId !== id) {
+          console.log('scroll', id);
+          window.location.href = `#${id}`;
         }
       }, 150);
     };
@@ -50,14 +56,12 @@ function App() {
         clearTimeout(timeoutId);
       }
     };
-  }, []);
+  }, [times]);
 
-  const handleRemoveFirst = useCallback(() => {
+  const handleRemoveById = useCallback((id: string) => {
     setTimes((prevTimes) => {
       if (prevTimes.length <= 1) return prevTimes;
-      const newTimes = [...prevTimes];
-      newTimes.shift();
-      return newTimes;
+      return prevTimes.filter((time) => time.id !== id);
     });
   }, []);
 
@@ -65,29 +69,27 @@ function App() {
 
   return (
     <>
-      {times.map((time, index) => {
+      {times.map((time) => {
         return (
           <TimerContainer
-            key={index}
+            key={time.id}
             time={time}
             setTimes={handleSetTime}
-            index={index}
             onNew={handleNew}
+            handleRemoveById={handleRemoveById}
           />
         );
       })}
 
       <div className="fixed right-4 top-1/2 flex translate-y--1/2 flex-col gap-1">
         {hasMultipleTimes &&
-          times.map((time, index) => {
+          times.map((time) => {
             return (
-              <a href={`#${index}`} key={index}>
-                {time} new
+              <a href={`#${time.id}`} key={time.id}>
+                {time.time} {time.id}
               </a>
             );
           })}
-
-        <button onClick={handleRemoveFirst}>Remove first</button>
       </div>
       <Background />
     </>
