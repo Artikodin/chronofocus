@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
+import { useHashChange } from '../../hooks/useHashchange';
 
 type Props = {
   time: string;
@@ -10,19 +11,7 @@ type Props = {
   onReset: () => void;
 };
 
-const useHashChange = (callback: () => void) => {
-  useEffect(() => {
-    const handleHashChange = () => {
-      callback();
-    };
 
-    window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [callback]);
-};
 
 export default function Timer({ time, setTime, onStart, onStop, onReset }: Props) {
   const [isFocused, setIsFocused] = useState(false);

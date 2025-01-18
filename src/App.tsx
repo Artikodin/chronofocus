@@ -1,12 +1,16 @@
 import { useCallback, useState, useEffect } from 'react';
-import Background from './components/Background';
-import { TimerContainer } from './components/TimerContainer';
 import { v4 as uuidv4 } from 'uuid';
 
+import Background from './components/Background';
+import { TimerContainer } from './components/TimerContainer';
+import { SideNav } from './components/SideNav';
+export type Time = {
+  time: string;
+  id: string;
+};
+
 function App() {
-  const [times, setTimes] = useState<Array<{ time: string; id: string }>>([
-    { time: '001000', id: uuidv4() },
-  ]);
+  const [times, setTimes] = useState<Array<Time>>([{ time: '001000', id: uuidv4() }]);
 
   const handleSetTime = useCallback((id: string, time: string) => {
     setTimes((prevTimes) => {
@@ -44,7 +48,7 @@ function App() {
         if (shownId !== id) {
           window.location.href = `#${id}`;
         }
-      }, 150);
+      }, 50);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -63,11 +67,13 @@ function App() {
 
       const index = times.findIndex((time) => time.id === id);
       const length = times.length;
+
       if (index === length - 1) {
         window.location.href = `#${times[index - 1].id}`;
       } else {
         window.location.href = `#${times[index + 1].id}`;
       }
+
       setTimeout(() => {
         setTimes((prevTimes) => {
           if (prevTimes.length <= 1) return prevTimes;
@@ -77,8 +83,6 @@ function App() {
     },
     [times]
   );
-
-  const hasMultipleTimes = times.length > 1;
 
   return (
     <>
@@ -94,16 +98,7 @@ function App() {
         );
       })}
 
-      <div className="fixed right-4 top-1/2 flex translate-y--1/2 flex-col gap-1">
-        {hasMultipleTimes &&
-          times.map((time) => {
-            return (
-              <a href={`#${time.id}`} key={time.id}>
-                {time.time} {time.id}
-              </a>
-            );
-          })}
-      </div>
+      <SideNav times={times} />
       <Background />
     </>
   );
