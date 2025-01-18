@@ -123,6 +123,7 @@ export default function Timer({ time, setTime, onStart, onStop, onReset }: Props
         onKeyDown={handleTimeInput}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        onChange={() => {}}
       />
       <div className="bg-white">
         <button onClick={handleAddTime(1)}>+1:00</button>
