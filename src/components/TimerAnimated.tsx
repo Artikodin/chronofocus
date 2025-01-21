@@ -3,25 +3,27 @@ import { useAnimation } from '../hooks/useAnimation';
 import { Circle } from '../objects/Circle';
 import { parseHHMMSStringToMs } from './Timer/utils';
 import Timer from './Timer';
+import { CircleX } from 'lucide-react';
 
 type Props = {
-  size?: number;
-  dotCount?: number;
-  radius?: number;
-  duration?: number;
   time: string;
   setTime: React.Dispatch<React.SetStateAction<string>>;
   currentId: string;
+  handleRemoveById: (id: string) => void;
+  hasMultipleTimes: boolean;
 };
 
 export const TimerAnimated = ({
-  size = 400,
-  radius = 150,
-  dotCount = 60,
   time,
   setTime,
   currentId,
+  handleRemoveById,
+  hasMultipleTimes,
 }: Props) => {
+  const size = 800;
+  const radius = 350;
+  const dotCount = 120;
+
   const centerX = size / 2;
   const centerY = size / 2;
   const circleRef = useRef(new Circle(dotCount, radius, centerX, centerY));
@@ -64,8 +66,15 @@ export const TimerAnimated = ({
 
   return (
     <>
-      <canvas ref={canvasRef} width={size} height={size} className="relative" />
-      <div className="bg-white/50">
+      <div className="relative">
+        {hasMultipleTimes && (
+        <button
+          onClick={() => handleRemoveById(currentId)}
+          className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 z-20"
+        >
+          <CircleX className="h-8 w-8 text-white" />
+          </button>
+        )}
         <Timer
           time={time}
           setTime={setTime}
@@ -73,6 +82,12 @@ export const TimerAnimated = ({
           onStop={handleStop}
           onReset={handleReset}
           currentId={currentId}
+        />
+        <canvas
+          ref={canvasRef}
+          width={size}
+          height={size}
+          className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
         />
       </div>
     </>

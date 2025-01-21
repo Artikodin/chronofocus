@@ -16,6 +16,8 @@ export default function Timer({ time, setTime, onStart, onStop, onReset, current
   const [startTime, setStartTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
   const [renderTime, setRenderTime] = useState<number | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     let intervalId: number;
@@ -87,17 +89,22 @@ export default function Timer({ time, setTime, onStart, onStop, onReset, current
   const handleStart = () => {
     if (remainingMs <= 0) return;
     setStartTime(performance.now());
+    setIsRunning(true);
+    setIsPaused(false);
     onStart();
   };
 
   const handleStop = () => {
     pause();
+    setIsPaused(true);
     onStop();
   };
 
   const handleReset = () => {
     setStartTime(null);
     setAccumulatedTime(0);
+    setIsRunning(false);
+    setIsPaused(false);
     onReset();
   };
 
@@ -119,28 +126,76 @@ export default function Timer({ time, setTime, onStart, onStop, onReset, current
     }
   }, [remainingMs, startTime]);
 
+  const hoverStyle =
+    " relative after:absolute after:bottom-0 after:left-0 after:z-0 after:h-[2px] after:w-full after:origin-right after:scale-x-50 after:rounded-full after:bg-white after:transition-transform after:duration-75 after:ease-in after:content-[''] hover:after:scale-x-100";
+
+  const hoverInputStyle =
+    "relative after:absolute after:-bottom-4 after:left-0 after:z-0 after:h-[4px] after:w-full after:origin-right after:scale-x-50 after:rounded-full after:bg-white after:transition-transform after:duration-75 after:ease-in after:content-[''] hover:after:scale-x-100";
+
+  const isDisabled = isRunning && !isPaused;
+
   return (
-    <div className="flex flex-col items-center justify-center gap-8">
-      <div className="text-white">{elapsedMs}</div>
-      <input
-        type="text"
-        value={isFocused ? formattedRaw : formattedTimer}
-        onKeyDown={handleTimeInput}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onChange={() => {}}
-      />
-      <div className="bg-white">
-        <button onClick={handleAddTime(1)}>+1:00</button>
-        <button onClick={handleAddTime(10)}>+10:00</button>
-        <button onClick={handleAddTime(15)}>+15:00</button>
+    <div className="relative z-10 flex flex-col items-center justify-center gap-8">
+      <div className={isDisabled ? undefined : hoverInputStyle}>
+        <input
+          type="text"
+          value={isFocused ? formattedRaw : formattedTimer}
+          onKeyDown={handleTimeInput}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onChange={() => {}}
+          className={`h-32 w-96 bg-transparent text-center text-8xl text-white outline-none`}
+          disabled={isDisabled}
+          data-disabled={isDisabled}
+        />
+      </div>
+      <div className="flex gap-4">
+        <button
+          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          onClick={handleAddTime(1)}
+          disabled={isDisabled}
+          data-disabled={isDisabled}
+        >
+          +1:00
+        </button>
+        <button
+          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          onClick={handleAddTime(10)}
+          disabled={isDisabled}
+          data-disabled={isDisabled}
+        >
+          +10:00
+        </button>
+        <button
+          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          onClick={handleAddTime(15)}
+          disabled={isDisabled}
+          data-disabled={isDisabled}
+        >
+          +15:00
+        </button>
       </div>
 
-      <div className="bg-white">
-        <button onClick={handleStart}>start</button>
-        <button onClick={handleStop}>stop</button>
-        <button onClick={handleReset}>reset</button>
-      </div>
+      {!isRunning ? (
+        <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStart}>
+          start
+        </button>
+      ) : (
+        <div className="flex gap-4">
+          {isPaused ? (
+            <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStart}>
+              start
+            </button>
+          ) : (
+            <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStop}>
+              stop
+            </button>
+          )}
+          <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleReset}>
+            reset
+          </button>
+        </div>
+      )}
     </div>
   );
 }

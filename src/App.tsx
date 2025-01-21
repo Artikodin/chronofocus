@@ -99,12 +99,15 @@ function App() {
     [times]
   );
 
+  const hasMultipleTimes = times.length > 1;
+
   return (
     <>
       {times.map((time) => {
         return (
           <TimerContainer
             key={time.id}
+            hasMultipleTimes={hasMultipleTimes}
             time={time}
             setTimes={handleSetTime}
             onNew={handleNew}
