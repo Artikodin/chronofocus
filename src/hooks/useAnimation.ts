@@ -22,6 +22,12 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
     subscribers.forEach((subscriber) => {
       subscriber.draw();
     });
+
+    return () => {
+      if (subscribers.size === 0) {
+        _reset();
+      }
+    };
   }, [subscribers.size]);
 
   useEffect(() => {
