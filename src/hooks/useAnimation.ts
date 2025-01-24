@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubscriber';
 
-const hasSomeRunning = (subscribers: Map<string, AnimationSubscriber>) => {
+export const hasSomeRunning = (subscribers: Map<string, AnimationSubscriber>) => {
   for (const sub of subscribers.values()) {
     if (sub.isRunning) {
       return true;
@@ -17,21 +17,21 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
   const isRunning = useRef(false);
 
   useEffect(() => {
-    console.log('useEffect');
+    console.log('useEffect- draw');
 
     subscribers.forEach((subscriber) => {
       subscriber.draw();
     });
+  }, [subscribers.size]);
+
+  useEffect(() => {
+    console.log('useEffect- loop');
 
     loop.current = (timestamp: number) => {
       if (!loop.current) return;
 
       const isSomeRunning = hasSomeRunning(subscribers);
       if (!isSomeRunning) return;
-
-      // if (!previousTimestamp.current) {
-      //   previousTimestamp.current = timestamp;
-      // }
 
       const deltaMs = timestamp - previousTimestamp.current;
       const delta = deltaMs / 1000;
@@ -68,7 +68,7 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
     return () => {
       _reset();
     };
-  }, [subscribers.size]);
+  }, []);
 
   const _reset = () => {
     if (!animation.current) return;

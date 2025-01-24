@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { AnimationContext } from './context';
-import { useAnimation } from '../../hooks/useAnimation';
+import { useAnimation, hasSomeRunning } from '../../hooks/useAnimation';
 import type { AnimationSubscriber } from './AnimationSubscriber';
 
 type Props = {
@@ -24,11 +24,15 @@ export const AnimationProvider = ({ children }: Props) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
     if (sub.isRunning) return;
-    handleStartAnimation();
 
     sub.isRunning = true;
     sub.isResetting = false;
     sub.isStarted = true;
+
+    const isSomeRunning = hasSomeRunning(subscribersRef.current);
+    if (isSomeRunning) {
+      handleStartAnimation();
+    }
   };
 
   const handlePause = (id: string) => {
@@ -37,18 +41,25 @@ export const AnimationProvider = ({ children }: Props) => {
     if (!sub.isRunning) return;
     sub.isRunning = false;
 
-    handleStopAnimation();
+    const isSomeRunning = hasSomeRunning(subscribersRef.current);
+    if (!isSomeRunning) {
+      handleStopAnimation();
+    }
   };
 
   const handleReset = (id: string) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
     if (!sub.isStarted) return;
-    handleStartAnimation();
 
     sub.isResetting = true;
     sub.isRunning = true;
     sub.isStarted = false;
+
+    const isSomeRunning = hasSomeRunning(subscribersRef.current);
+    if (isSomeRunning) {
+      handleStartAnimation();
+    }
   };
 
   const handleComplete = (id: string) => {
@@ -58,7 +69,11 @@ export const AnimationProvider = ({ children }: Props) => {
     sub.isRunning = false;
     sub.isResetting = false;
     sub.isStarted = false;
-    handleStopAnimation();
+
+    const isSomeRunning = hasSomeRunning(subscribersRef.current);
+    if (!isSomeRunning) {
+      handleStopAnimation();
+    }
   };
 
   return (
