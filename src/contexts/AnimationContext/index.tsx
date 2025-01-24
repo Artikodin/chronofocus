@@ -20,7 +20,7 @@ export const AnimationProvider = ({ children }: Props) => {
     subscribersRef.current.delete(id);
   };
 
-  const start = (id: string) => {
+  const handleStart = (id: string) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
     if (sub.isRunning) return;
@@ -31,7 +31,7 @@ export const AnimationProvider = ({ children }: Props) => {
     sub.isStarted = true;
   };
 
-  const pause = (id: string) => {
+  const handlePause = (id: string) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
     if (!sub.isRunning) return;
@@ -40,7 +40,7 @@ export const AnimationProvider = ({ children }: Props) => {
     handleStopAnimation();
   };
 
-  const reset = (id: string) => {
+  const handleReset = (id: string) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
     if (!sub.isStarted) return;
@@ -51,7 +51,7 @@ export const AnimationProvider = ({ children }: Props) => {
     sub.isStarted = false;
   };
 
-  const onComplete = (id: string) => {
+  const handleComplete = (id: string) => {
     const sub = subscribersRef.current.get(id);
     if (!sub) return;
 
@@ -62,7 +62,9 @@ export const AnimationProvider = ({ children }: Props) => {
   };
 
   return (
-    <AnimationContext.Provider value={{ subscribe, unsubscribe, start, pause, reset, onComplete }}>
+    <AnimationContext.Provider
+      value={{ subscribe, unsubscribe, handleStart, handlePause, handleReset, handleComplete }}
+    >
       {children}
     </AnimationContext.Provider>
   );

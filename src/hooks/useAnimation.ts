@@ -17,6 +17,8 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
   const isRunning = useRef(false);
 
   useEffect(() => {
+    console.log('useEffect');
+
     subscribers.forEach((subscriber) => {
       subscriber.draw();
     });
@@ -27,12 +29,14 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
       const isSomeRunning = hasSomeRunning(subscribers);
       if (!isSomeRunning) return;
 
-      if (!previousTimestamp.current) {
-        previousTimestamp.current = timestamp;
-      }
+      // if (!previousTimestamp.current) {
+      //   previousTimestamp.current = timestamp;
+      // }
 
       const deltaMs = timestamp - previousTimestamp.current;
       const delta = deltaMs / 1000;
+
+      console.log('delta', delta);
 
       subscribers.forEach((subscriber) => {
         if (!subscriber.isRunning) return;
@@ -79,6 +83,9 @@ export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
     if (isRunning.current) return;
     isRunning.current = true;
 
+    console.log('handleStartAnimation');
+
+    previousTimestamp.current = performance.now();
     requestAnimationFrame(loop.current);
   };
 

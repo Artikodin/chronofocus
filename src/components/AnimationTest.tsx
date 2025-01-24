@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
+
 import { AnimationProvider } from '../contexts/AnimationContext';
 import { AnimationContext } from '../contexts/AnimationContext/context';
 import { Circle } from '../objects/Circle';
@@ -8,14 +9,16 @@ const AnimationChild = ({ id }: { id: string }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const context = useContext(AnimationContext);
-  const { subscribe, unsubscribe, start, pause, reset, onComplete } = context || {};
-
-  const circle = new Circle(60, 200, 500, 500);
+  const { subscribe, unsubscribe, handleStart, handlePause, handleReset, handleComplete } =
+    context || {};
 
   useEffect(() => {
     if (!canvasRef.current) return;
+
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
+
+    const circle = new Circle(60, 200, 500, 500);
 
     const draw = () => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -35,7 +38,7 @@ const AnimationChild = ({ id }: { id: string }) => {
 
       const hasCircleReset = circle.dots.every((dot) => dot.progress === 0);
       if (hasCircleReset) {
-        onComplete?.(id);
+        handleComplete?.(id);
       }
     };
 
@@ -52,13 +55,22 @@ const AnimationChild = ({ id }: { id: string }) => {
     <div className="relative border border-red-500">
       <canvas style={{ background: 'black' }} height={1000} width={1000} ref={canvasRef} />
       <div className="absolute left-0 top-0">
-        <button className="rounded-md bg-blue-500 px-4 py-2 text-white" onClick={() => start?.(id)}>
+        <button
+          className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          onClick={() => handleStart?.(id)}
+        >
           Start
         </button>
-        <button className="rounded-md bg-blue-500 px-4 py-2 text-white" onClick={() => pause?.(id)}>
+        <button
+          className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          onClick={() => handlePause?.(id)}
+        >
           Pause
         </button>
-        <button className="rounded-md bg-blue-500 px-4 py-2 text-white" onClick={() => reset?.(id)}>
+        <button
+          className="rounded-md bg-blue-500 px-4 py-2 text-white"
+          onClick={() => handleReset?.(id)}
+        >
           Reset
         </button>
       </div>
