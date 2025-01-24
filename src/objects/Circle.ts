@@ -41,7 +41,7 @@ export class Circle {
       const angle = Math.atan2(dot.originalY - this.centerY, dot.originalX - this.centerX);
 
       if (dotToHide >= dot.index) {
-        dot.update(delta, { angle, distance: 40, duration: 1 });
+        dot.update(delta, { angle, distance: 100, duration: 0.5 });
       }
     });
   }
@@ -58,7 +58,7 @@ export class Circle {
       const angle = Math.atan2(dot.originalY - this.centerY, dot.originalX - this.centerX);
 
       if (dotToShow <= dot.index) {
-        dot.updateReset(delta, { angle, duration: 1 });
+        dot.updateReset(delta, { angle, duration: 0.8 });
       }
     });
   }

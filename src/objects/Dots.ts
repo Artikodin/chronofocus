@@ -1,4 +1,15 @@
 import { easeInCubic } from '../utils/transitions';
+
+/**
+ * Linear interpolation between start and end values based on a progress ratio
+ * @param start Starting value
+ * @param end Ending value
+ * @param progress Progress ratio (0 to 1)
+ * @returns Interpolated value between start and end
+ */
+export const lerp = (start: number, end: number, progress: number): number => {
+  return start + (end - start) * progress;
+};
 export class Dot {
   x: number;
   y: number;
@@ -53,7 +64,7 @@ export class Dot {
     const distance = Math.hypot(this.x - this.originalX, this.y - this.originalY);
     this.x = this.originalX + Math.cos(angle) * distance * eased;
     this.y = this.originalY + Math.sin(angle) * distance * eased;
-    this.opacity = 1 - eased;
+    this.opacity = lerp(0.5, 1, 1 - eased);
   }
 
   draw(ctx: CanvasRenderingContext2D) {

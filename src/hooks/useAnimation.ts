@@ -1,120 +1,92 @@
 import { useEffect, useRef } from 'react';
+import type { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubscriber';
 
-export const useAnimation = (
-  draw: (ctx: CanvasRenderingContext2D) => void,
-  update: (delta: number, ctx: CanvasRenderingContext2D) => void,
-  reset: (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => void,
-  duration: number
-) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const hasSomeRunning = (subscribers: Map<string, AnimationSubscriber>) => {
+  for (const sub of subscribers.values()) {
+    if (sub.isRunning) {
+      return true;
+    }
+  }
+  return false;
+};
 
+export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
   const loop = useRef<FrameRequestCallback>();
-
-  type Animation = {
-    animationFrameRef: number | null;
-    pauseAt: number;
-    previousTimestamp: number;
-    isRunning: boolean;
-    isResetting: boolean;
-  };
-
-  const initialAnimation: Animation = {
-    animationFrameRef: null,
-    pauseAt: 0,
-    previousTimestamp: 0,
-    isRunning: false,
-    isResetting: false,
-  };
-
-  const resetAnimation: Animation = { ...initialAnimation };
-
-  const animation = useRef<Animation>(initialAnimation);
+  const animation = useRef<number>();
+  const previousTimestamp = useRef(0);
+  const isRunning = useRef(false);
 
   useEffect(() => {
-    animation.current.previousTimestamp = 0;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    draw(ctx);
-
-    const cancelRAF = () => {
-      if (animation.current.animationFrameRef) {
-        cancelAnimationFrame(animation.current.animationFrameRef);
-        animation.current = { ...resetAnimation };
-      }
-    };
+    subscribers.forEach((subscriber) => {
+      subscriber.draw();
+    });
 
     loop.current = (timestamp: number) => {
       if (!loop.current) return;
-      if (!animation.current.previousTimestamp) {
-        animation.current.previousTimestamp = timestamp;
+
+      const isSomeRunning = hasSomeRunning(subscribers);
+      if (!isSomeRunning) return;
+
+      if (!previousTimestamp.current) {
+        previousTimestamp.current = timestamp;
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const deltaMs = timestamp - animation.current.previousTimestamp;
+      const deltaMs = timestamp - previousTimestamp.current;
       const delta = deltaMs / 1000;
 
-      if (animation.current.isResetting) {
-        reset(delta, ctx, cancelRAF);
-      } else {
-        update(delta, ctx);
-      }
+      subscribers.forEach((subscriber) => {
+        if (!subscriber.isRunning) return;
 
-      if (!animation.current.isRunning) return;
-      animation.current.previousTimestamp = timestamp;
-      animation.current.animationFrameRef = requestAnimationFrame(loop.current);
+        if (subscriber.isResetting) {
+          subscriber.reset(delta);
+        } else {
+          subscriber.update(delta);
+        }
+      });
+
+      previousTimestamp.current = timestamp;
+      animation.current = requestAnimationFrame(loop.current);
     };
+
+    if (subscribers.size === 0) {
+      if (!animation.current) return;
+      cancelAnimationFrame(animation.current);
+    }
+
+    if (subscribers.size > 0) {
+      const isSomeRunning = hasSomeRunning(subscribers);
+      if (!isSomeRunning) return;
+
+      if (!loop.current) return;
+      requestAnimationFrame(loop.current);
+    }
 
     return () => {
-      if (!animation.current.animationFrameRef) return;
-      cancelAnimationFrame(animation.current.animationFrameRef);
+      _reset();
     };
-  }, [duration]);
+  }, [subscribers.size]);
 
-  const run = () => {
+  const _reset = () => {
+    if (!animation.current) return;
+    isRunning.current = false;
+    previousTimestamp.current = 0;
+
+    cancelAnimationFrame(animation.current);
+  };
+
+  const handleStartAnimation = () => {
     if (!loop.current) return;
-    animation.current.previousTimestamp += performance.now() - animation.current.pauseAt;
+    if (isRunning.current) return;
+    isRunning.current = true;
+
     requestAnimationFrame(loop.current);
-    animation.current.isRunning = true;
   };
 
-  const handleStart = () => {
-    if (animation.current.isRunning) return;
-    run();
+  const handleStopAnimation = () => {
+    if (!isRunning.current) return;
 
-    if (animation.current.isResetting) return;
-    animation.current.isResetting = false;
+    _reset();
   };
 
-  const handleStop = () => {
-    if (!animation.current.isRunning) return;
-    if (!animation.current.animationFrameRef) return;
-
-    cancelAnimationFrame(animation.current.animationFrameRef);
-    animation.current.animationFrameRef = null;
-    animation.current.pauseAt = performance.now();
-    animation.current.isRunning = false;
-  };
-
-  const handleReset = () => {
-    if (animation.current.isResetting) return;
-    animation.current.isResetting = true;
-
-    if (!animation.current.isRunning) {
-      run();
-    }
-  };
-
-  return {
-    canvasRef,
-    handleStart,
-    handleStop,
-    handleReset,
-  };
+  return { handleStartAnimation, handleStopAnimation };
 };
