@@ -1,9 +1,10 @@
-import { useCallback, useRef } from 'react';
-import { useAnimation } from '../hooks/useAnimation';
+import { useContext, useEffect, useRef } from 'react';
 import { Circle } from '../objects/Circle';
 import { parseHHMMSStringToMs } from './Timer/utils';
 import Timer from './Timer';
 import { CircleX } from 'lucide-react';
+import { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubscriber';
+import { AnimationContext } from '../contexts/AnimationContext/context';
 
 type Props = {
   time: string;
@@ -11,6 +12,9 @@ type Props = {
   currentId: string;
   handleRemoveById: (id: string) => void;
   hasMultipleTimes: boolean;
+  timer: {
+    id: string;
+  };
 };
 
 export const TimerAnimated = ({
@@ -19,68 +23,78 @@ export const TimerAnimated = ({
   currentId,
   handleRemoveById,
   hasMultipleTimes,
+  timer,
 }: Props) => {
   const size = 800;
-  const radius = 350;
-  const dotCount = 120;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const centerX = size / 2;
-  const centerY = size / 2;
-  const circleRef = useRef(new Circle(dotCount, radius, centerX, centerY));
+  const context = useContext(AnimationContext);
+  const { subscribe, unsubscribe, handleStart, handlePause, handleReset, handleComplete } =
+    context || {};
 
   const durationMs = parseHHMMSStringToMs(time);
   const duration = durationMs / 1000;
 
-  const draw = useCallback((ctx: CanvasRenderingContext2D) => {
-    circleRef.current.draw(ctx);
-  }, []);
+  useEffect(() => {
+    if (!canvasRef.current) return;
 
-  const update = useCallback(
-    (delta: number, ctx: CanvasRenderingContext2D) => {
-      circleRef.current.update(delta, { duration });
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
 
-      circleRef.current.draw(ctx);
-    },
-    [duration]
-  );
+    const radius = 350;
+    const dotCount = 120;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const circle = new Circle(dotCount, radius, centerX, centerY);
 
-  const reset = useCallback(
-    (delta: number, ctx: CanvasRenderingContext2D, cancelRAF: () => void) => {
-      circleRef.current.updateReset(delta, { duration: 2 });
+    const draw = () => {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      circle.draw(ctx);
+    };
 
-      circleRef.current.draw(ctx);
+    const update = (delta: number) => {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      circle.update(delta, { duration });
+      circle.draw(ctx);
+    };
 
-      if (circleRef.current.dots.every((dot) => dot.visible)) {
-        cancelRAF();
+    const reset = (delta: number) => {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      circle.updateReset(delta, { duration: 2 });
+      circle.draw(ctx);
+
+      const hasCircleReset = circle.dots.every((dot) => dot.progress === 0);
+      if (hasCircleReset) {
+        handleComplete?.(timer.id);
       }
-    },
-    []
-  );
+    };
 
-  const { canvasRef, handleStart, handleStop, handleReset } = useAnimation(
-    draw,
-    update,
-    reset,
-    duration
-  );
+    const subscriber = new AnimationSubscriber(timer.id, draw, update, reset);
+
+    subscribe?.(subscriber);
+
+    return () => {
+      unsubscribe?.(timer.id);
+    };
+  }, [duration]);
 
   return (
     <>
       <div className="relative">
         {hasMultipleTimes && (
-        <button
-          onClick={() => handleRemoveById(currentId)}
-          className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2 z-20"
-        >
-          <CircleX className="h-8 w-8 text-white" />
+          <button
+            onClick={() => handleRemoveById(currentId)}
+            className="absolute right-0 top-0 z-20 -translate-y-1/2 translate-x-1/2"
+          >
+            <CircleX className="h-8 w-8 text-white" />
           </button>
         )}
         <Timer
           time={time}
           setTime={setTime}
-          onStart={handleStart}
-          onStop={handleStop}
-          onReset={handleReset}
+          onStart={() => handleStart?.(currentId)}
+          onStop={() => handlePause?.(currentId)}
+          onReset={() => handleReset?.(currentId)}
           currentId={currentId}
         />
         <canvas

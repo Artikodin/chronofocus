@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { AnimationContext } from './context';
 import { useAnimation, hasSomeRunning } from '../../hooks/useAnimation';
 import type { AnimationSubscriber } from './AnimationSubscriber';
@@ -8,16 +8,19 @@ type Props = {
 };
 
 export const AnimationProvider = ({ children }: Props) => {
+  const [version, setVersion] = useState(0);
   const subscribersRef = useRef(new Map<string, AnimationSubscriber>());
 
   const { handleStartAnimation, handleStopAnimation } = useAnimation(subscribersRef.current);
 
   const subscribe = (sub: AnimationSubscriber) => {
     subscribersRef.current.set(sub.id, sub);
+    setVersion((prev) => prev + 1);
   };
 
   const unsubscribe = (id: string) => {
     subscribersRef.current.delete(id);
+    setVersion((prev) => prev + 1);
   };
 
   const handleStart = (id: string) => {

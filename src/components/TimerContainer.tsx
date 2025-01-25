@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TimerAnimated } from './TimerAnimated';
 import { CirclePlus } from 'lucide-react';
 
@@ -12,6 +12,7 @@ type Props = {
   handleRemoveById: (id: string) => void;
   currentId: string;
   hasMultipleTimes: boolean;
+  onMount: (id: string) => void;
 };
 
 export const TimerContainer = ({
@@ -21,24 +22,30 @@ export const TimerContainer = ({
   onNew,
   handleRemoveById,
   currentId,
+  onMount,
 }: Props) => {
-  const timerRef = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [time, setTime] = useState(_time.time);
 
   useEffect(() => {
     setTimes(_time.id, time);
   }, [time, setTimes, _time.id]);
 
+  useEffect(() => {
+    onMount(_time.id);
+  }, []);
+
   return (
     <div
       className="flex h-screen w-screen snap-start flex-col items-center justify-between gap-8"
-      ref={timerRef}
+      ref={ref}
       id={_time.id}
     >
       <div className="h-14 w-full" />
       <TimerAnimated
         hasMultipleTimes={hasMultipleTimes}
         time={time}
+        timer={_time}
         setTime={setTime}
         currentId={currentId}
         handleRemoveById={handleRemoveById}

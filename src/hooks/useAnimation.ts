@@ -11,8 +11,8 @@ export const hasSomeRunning = (subscribers: Map<string, AnimationSubscriber>) =>
 };
 
 export const useAnimation = (subscribers: Map<string, AnimationSubscriber>) => {
-  const loop = useRef<FrameRequestCallback>();
-  const animation = useRef<number>();
+  const loop = useRef<FrameRequestCallback>(null);
+  const animation = useRef<number>(null);
   const previousTimestamp = useRef(0);
   const isRunning = useRef(false);
 

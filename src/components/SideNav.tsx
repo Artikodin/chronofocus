@@ -4,16 +4,28 @@ import { formatTimerRunning } from './Timer/utils';
 type Props = {
   times: Time[];
   currentId: string;
+  onSelect: (id: string) => void;
 };
 
-const Item = ({ time, currentId }: { time: Time; currentId: string }) => {
-  // [TODO]: why this makes delete animation not work?
+const Item = ({
+  time,
+  currentId,
+  onSelect,
+}: {
+  time: Time;
+  currentId: string;
+  onSelect: (id: string) => void;
+}) => {
   const isActive = currentId === time.id;
 
   const formattedTime = formatTimerRunning(time.time, 0);
 
   return (
-    <a href={`#${time.id}`} key={time.id} className="group flex items-center justify-end gap-4">
+    <a
+      key={time.id}
+      className="group flex items-center justify-end gap-4"
+      onClick={() => onSelect(time.id)}
+    >
       <div className="text-sm text-white">{formattedTime}</div>
       <div
         data-active={isActive}
@@ -23,7 +35,7 @@ const Item = ({ time, currentId }: { time: Time; currentId: string }) => {
   );
 };
 
-export const SideNav = ({ times, currentId }: Props) => {
+export const SideNav = ({ times, currentId, onSelect }: Props) => {
   const hasMultipleTimes = times.length > 1;
 
   if (!hasMultipleTimes) return null;
@@ -31,7 +43,14 @@ export const SideNav = ({ times, currentId }: Props) => {
   return (
     <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col gap-1">
       {times.map((time) => {
-        return <Item key={time.id} time={time} currentId={currentId} />;
+        return (
+          <Item
+            key={time.id}
+            time={time}
+            currentId={currentId}
+            onSelect={onSelect}
+          />
+        );
       })}
     </div>
   );
