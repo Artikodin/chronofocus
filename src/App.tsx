@@ -42,10 +42,6 @@ function App() {
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
 
-  useEffect(() => {
-    console.log(timers);
-  }, [timers]);
-
   const setVisible = (id: string) => {
     setTimers((prevTimers) =>
       prevTimers.map((timer) =>

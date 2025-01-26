@@ -121,17 +121,14 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
     }
   }, [remainingMs, startTime]);
 
-  const hoverStyle =
-    " relative after:absolute after:bottom-0 after:left-0 after:z-0 after:h-[2px] after:w-full after:origin-right after:scale-x-50 after:rounded-full after:bg-white after:transition-transform after:duration-75 after:ease-in after:content-[''] hover:after:scale-x-100";
-
-  const hoverInputStyle =
-    "relative after:absolute after:-bottom-4 after:left-0 after:z-0 after:h-[4px] after:w-full after:origin-right after:scale-x-50 after:rounded-full after:bg-white after:transition-transform after:duration-75 after:ease-in after:content-[''] hover:after:scale-x-100";
+  const buttonStyle =
+    'relative px-4 pb-3 rounded-2xl border-white bg-white bg-opacity-5 backdrop-blur-md transition-all ease-in hover:scale-[101%] hover:bg-opacity-10 text-2xl text-white data-[disabled=true]:opacity-20 data-[disabled=true]:pointer-events-none ';
 
   const isDisabled = isRunning && !isPaused;
 
   return (
     <div className="relative z-10 flex flex-col items-center justify-center gap-8">
-      <div className={isDisabled ? undefined : hoverInputStyle}>
+      <div className="group relative">
         <input
           type="text"
           value={isFocused ? formattedRaw : formattedTimer}
@@ -139,14 +136,18 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onChange={() => {}}
-          className={`h-32 w-96 bg-transparent text-center text-8xl text-white outline-none`}
+          className="relative z-10 h-28 w-96 bg-transparent pb-14 pt-4 text-center text-8xl text-white outline-none"
           disabled={isDisabled}
-          data-disabled={isDisabled}
         />
+        <div
+          data-disabled={isDisabled}
+          className="absolute bottom-0 left-0 z-0 h-full w-full rounded-2xl border-2 border-white bg-white bg-opacity-10 opacity-50 backdrop-blur-md transition-all ease-in group-hover:scale-[101%] data-[disabled=true]:opacity-0"
+        ></div>
       </div>
+
       <div className="flex gap-4">
         <button
-          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          className={buttonStyle}
           onClick={handleAddTime(1)}
           disabled={isDisabled}
           data-disabled={isDisabled}
@@ -154,7 +155,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           +1:00
         </button>
         <button
-          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          className={buttonStyle}
           onClick={handleAddTime(10)}
           disabled={isDisabled}
           data-disabled={isDisabled}
@@ -162,7 +163,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           +10:00
         </button>
         <button
-          className={`h-14 w-16 text-2xl text-white transition-opacity data-[disabled=true]:opacity-20 ${hoverStyle}`}
+          className={buttonStyle}
           onClick={handleAddTime(15)}
           disabled={isDisabled}
           data-disabled={isDisabled}
@@ -172,21 +173,21 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
       </div>
 
       {!isRunning ? (
-        <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStart}>
+        <button className={buttonStyle} onClick={handleStart}>
           start
         </button>
       ) : (
         <div className="flex gap-4">
           {isPaused ? (
-            <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStart}>
+            <button className={buttonStyle} onClick={handleStart}>
               start
             </button>
           ) : (
-            <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleStop}>
+            <button className={buttonStyle} onClick={handleStop}>
               stop
             </button>
           )}
-          <button className={`h-14 w-16 text-2xl text-white ${hoverStyle}`} onClick={handleReset}>
+          <button className={buttonStyle} onClick={handleReset}>
             reset
           </button>
         </div>
