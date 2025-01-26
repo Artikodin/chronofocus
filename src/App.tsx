@@ -6,15 +6,44 @@ import { TimerContainer } from './components/TimerContainer';
 import { SideNav } from './components/SideNav';
 import { useScroll } from './hooks/useScroll';
 
-export type Time = {
+type TimerOptions = {
   time: string;
   id: string;
+  isComplete?: boolean;
+  isRunning?: boolean;
+  isVisible?: boolean;
 };
+
+class Timer {
+  time: string;
+  id: string;
+  isComplete: boolean;
+  isRunning: boolean;
+  isVisible: boolean;
+
+  constructor({
+    time,
+    id,
+    isComplete = false,
+    isRunning = false,
+    isVisible = false,
+  }: TimerOptions) {
+    this.time = time;
+    this.id = id;
+    this.isComplete = isComplete;
+    this.isRunning = isRunning;
+    this.isVisible = isVisible;
+  }
+}
 
 function App() {
   const id = uuidv4();
-  const [times, setTimes] = useState<Array<Time>>([{ time: '000001', id }]);
+  const timer = new Timer({ time: '000100', id, isVisible: true });
+
+  const [times, setTimes] = useState<Array<Timer>>([timer]);
+
   const [currentId, setCurrentId] = useState(id);
+
   const [isComplete, setIsComplete] = useState(false);
   const [completeId, setCompleteId] = useState('');
 
@@ -31,7 +60,7 @@ function App() {
     setTimes((prevTimes) => {
       const newTimes = [...prevTimes];
       const id = uuidv4();
-      newTimes.push({ time: '000001', id });
+      newTimes.push(new Timer({ time: '000001', id }));
       return newTimes;
     });
   }, []);
