@@ -15,6 +15,7 @@ type Props = {
   timer: {
     id: string;
   };
+  onComplete: (id: string) => void;
 };
 
 export const TimerAnimated = ({
@@ -24,6 +25,7 @@ export const TimerAnimated = ({
   handleRemoveById,
   hasMultipleTimes,
   timer,
+  onComplete,
 }: Props) => {
   const size = 800;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -56,6 +58,12 @@ export const TimerAnimated = ({
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       circle.update(delta, { duration });
       circle.draw(ctx);
+
+      const hasCircleComplete = circle.dots.every((dot) => dot.progress === 1);
+      if (hasCircleComplete) {
+        handleComplete?.(timer.id);
+        onComplete?.(timer.id);
+      }
     };
 
     const reset = (delta: number) => {

@@ -71,7 +71,6 @@ export const AnimationProvider = ({ children }: Props) => {
 
     sub.isRunning = false;
     sub.isResetting = false;
-    sub.isStarted = false;
 
     const isSomeRunning = hasSomeRunning(subscribersRef.current);
     if (!isSomeRunning) {

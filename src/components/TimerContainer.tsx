@@ -13,6 +13,7 @@ type Props = {
   currentId: string;
   hasMultipleTimes: boolean;
   onMount: (id: string) => void;
+  onComplete: (id: string) => void;
 };
 
 export const TimerContainer = ({
@@ -23,6 +24,7 @@ export const TimerContainer = ({
   handleRemoveById,
   currentId,
   onMount,
+  onComplete,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const [time, setTime] = useState(_time.time);
@@ -43,6 +45,7 @@ export const TimerContainer = ({
     >
       <div className="h-14 w-full" />
       <TimerAnimated
+        onComplete={onComplete}
         hasMultipleTimes={hasMultipleTimes}
         time={time}
         timer={_time}

@@ -2,12 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Then use it in your styles */
-html {
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-}
-
 body {
   font-family: 'Maname', sans-serif;
+  background-color: black;
 }

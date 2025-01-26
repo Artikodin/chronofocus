@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -13,8 +13,10 @@ export type Time = {
 
 function App() {
   const id = uuidv4();
-  const [times, setTimes] = useState<Array<Time>>([{ time: '001000', id }]);
+  const [times, setTimes] = useState<Array<Time>>([{ time: '000001', id }]);
   const [currentId, setCurrentId] = useState(id);
+  const [isComplete, setIsComplete] = useState(false);
+  const [completeId, setCompleteId] = useState('');
 
   const handleSetTime = useCallback((id: string, time: string) => {
     setTimes((prevTimes) => {
@@ -29,7 +31,7 @@ function App() {
     setTimes((prevTimes) => {
       const newTimes = [...prevTimes];
       const id = uuidv4();
-      newTimes.push({ time: '000500', id });
+      newTimes.push({ time: '000001', id });
       return newTimes;
     });
   }, []);
@@ -80,6 +82,27 @@ function App() {
     scrollTo(id);
   }, []);
 
+  useEffect(() => {
+    if (!isComplete) return;
+
+    const index = times.findIndex((time) => time.id === completeId);
+    const length = times.length;
+    const hasNext = index < length - 1;
+
+    if (hasNext) {
+      setCurrentId(times[index + 1].id);
+      scrollTo(times[index + 1].id);
+    }
+
+    setIsComplete(false);
+    setCompleteId('');
+  }, [isComplete, times]);
+
+  const handleComplete = (id: string) => {
+    setIsComplete(true);
+    setCompleteId(id);
+  };
+
   const hasMultipleTimes = times.length > 1;
 
   return (
@@ -87,6 +110,7 @@ function App() {
       {times.map((time) => {
         return (
           <TimerContainer
+            onComplete={handleComplete}
             onMount={handleMount}
             key={time.id}
             hasMultipleTimes={hasMultipleTimes}

@@ -108,10 +108,6 @@ export default function Timer({ time, setTime, onStart, onStop, onReset, current
     onReset();
   };
 
-  useEffect(() => {
-    handleReset();
-  }, [currentId]);
-
   const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
 
   const formattedRaw = formatRawInput(time);
