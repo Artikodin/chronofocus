@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -14,7 +14,7 @@ type TimerOptions = {
   isVisible?: boolean;
 };
 
-class Timer {
+export class Timer {
   time: string;
   id: string;
   isComplete: boolean;
@@ -38,30 +38,37 @@ class Timer {
 
 function App() {
   const id = uuidv4();
-  const timer = new Timer({ time: '000100', id, isVisible: true });
+  const timer = new Timer({ time: '000001', id, isVisible: true });
 
-  const [times, setTimes] = useState<Array<Timer>>([timer]);
+  const [timers, setTimers] = useState<Array<Timer>>([timer]);
 
-  const [currentId, setCurrentId] = useState(id);
+  useEffect(() => {
+    console.log(timers);
+  }, [timers]);
 
-  const [isComplete, setIsComplete] = useState(false);
-  const [completeId, setCompleteId] = useState('');
+  const setVisible = (id: string) => {
+    setTimers((prevTimers) =>
+      prevTimers.map((timer) =>
+        timer.id === id ? { ...timer, isVisible: true } : { ...timer, isVisible: false }
+      )
+    );
+  };
 
   const handleSetTime = useCallback((id: string, time: string) => {
-    setTimes((prevTimes) => {
-      const newTimes = [...prevTimes];
-      const index = newTimes.findIndex((time) => time.id === id);
-      newTimes[index].time = time;
-      return newTimes;
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      newTimers[index].time = time;
+      return newTimers;
     });
   }, []);
 
   const handleNew = useCallback(() => {
-    setTimes((prevTimes) => {
-      const newTimes = [...prevTimes];
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
       const id = uuidv4();
-      newTimes.push(new Timer({ time: '000001', id }));
-      return newTimes;
+      newTimers.push(new Timer({ time: '000001', id }));
+      return newTimers;
     });
   }, []);
 
@@ -70,10 +77,11 @@ function App() {
       const viewportHeight = window.innerHeight;
       const scrollPosition = window.scrollY;
       const currentIndex = Math.round(scrollPosition / viewportHeight);
-      const currentTime = times[currentIndex];
+      const currentTime = timers[currentIndex];
 
       if (!currentTime) return;
-      setCurrentId(currentTime.id);
+
+      setVisible(currentTime.id);
       const element = document.getElementById(currentTime.id);
 
       if (!element) return;
@@ -83,77 +91,85 @@ function App() {
 
   const handleRemoveById = useCallback(
     async (id: string) => {
-      if (times.length <= 1) return;
+      if (timers.length <= 1) return;
 
-      const index = times.findIndex((time) => time.id === id);
-      const length = times.length;
+      const index = timers.findIndex((timer) => timer.id === id);
+      const length = timers.length;
 
-      const nextId = index === length - 1 ? times[index - 1].id : times[index + 1].id;
+      const nextId = index === length - 1 ? timers[index - 1].id : timers[index + 1].id;
 
-      setCurrentId(nextId);
+      setVisible(nextId);
       scrollTo(nextId, () => {
-        setTimes((prevTimes) => {
-          if (prevTimes.length <= 1) return prevTimes;
-          return prevTimes.filter((time) => time.id !== id);
+        setTimers((prevTimers) => {
+          if (prevTimers.length <= 1) return prevTimers;
+          return prevTimers.filter((timer) => timer.id !== id);
         });
       });
     },
-    [times]
+    [timers]
   );
 
   const handleSelect = useCallback((id: string) => {
-    setCurrentId(id);
+    setVisible(id);
     scrollTo(id);
   }, []);
 
   const handleMount = useCallback((id: string) => {
-    setCurrentId(id);
+    setVisible(id);
     scrollTo(id);
   }, []);
 
-  useEffect(() => {
-    if (!isComplete) return;
-    if (completeId !== currentId) return;
-
-    const index = times.findIndex((time) => time.id === completeId);
-    const length = times.length;
-    const hasNext = index < length - 1;
-
-    if (hasNext) {
-      setCurrentId(times[index + 1].id);
-      scrollTo(times[index + 1].id);
-    }
-
-    setIsComplete(false);
-    setCompleteId('');
-  }, [isComplete, times]);
-
   const handleComplete = (id: string) => {
-    setIsComplete(true);
-    setCompleteId(id);
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      newTimers[index].isComplete = true;
+
+      const length = newTimers.length;
+      const hasNext = index < length - 1;
+
+      if (hasNext) {
+        const nextId = newTimers[index + 1].id;
+        scrollTo(nextId);
+        return newTimers.map((timer) =>
+          timer.id === nextId ? { ...timer, isVisible: true } : { ...timer, isVisible: false }
+        );
+      }
+
+      return newTimers;
+    });
   };
 
-  const hasMultipleTimes = times.length > 1;
+  const handleReset = (id: string) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      newTimers[index].isComplete = false;
+      return newTimers;
+    });
+  };
+
+  const hasMultipleTimes = timers.length > 1;
 
   return (
     <>
-      {times.map((time) => {
+      {timers.map((timer) => {
         return (
           <TimerContainer
             onComplete={handleComplete}
             onMount={handleMount}
-            key={time.id}
+            key={timer.id}
             hasMultipleTimes={hasMultipleTimes}
-            time={time}
+            timer={timer}
             setTimes={handleSetTime}
             onNew={handleNew}
             handleRemoveById={handleRemoveById}
-            currentId={currentId}
+            onReset={handleReset}
           />
         );
       })}
 
-      <SideNav times={times} currentId={currentId} onSelect={handleSelect} />
+      <SideNav timers={timers} onSelect={handleSelect} />
       <Background />
     </>
   );

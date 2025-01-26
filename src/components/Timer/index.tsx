@@ -8,10 +8,9 @@ type Props = {
   onStart: () => void;
   onStop: () => void;
   onReset: () => void;
-  currentId: string;
 };
 
-export default function Timer({ time, setTime, onStart, onStop, onReset, currentId }: Props) {
+export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);

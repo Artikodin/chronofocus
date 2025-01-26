@@ -1,57 +1,56 @@
 import { useEffect, useRef, useState } from 'react';
+
 import { TimerAnimated } from './TimerAnimated';
 import { CirclePlus } from 'lucide-react';
+import { Timer } from '../App';
 
 type Props = {
-  time: {
-    time: string;
-    id: string;
-  };
+  timer: Timer;
   setTimes: (index: string, time: string) => void;
   onNew: () => void;
   handleRemoveById: (id: string) => void;
-  currentId: string;
   hasMultipleTimes: boolean;
   onMount: (id: string) => void;
   onComplete: (id: string) => void;
+  onReset: (id: string) => void;
 };
 
 export const TimerContainer = ({
   hasMultipleTimes,
-  time: _time,
+  timer,
   setTimes,
   onNew,
   handleRemoveById,
-  currentId,
   onMount,
   onComplete,
+  onReset,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [time, setTime] = useState(_time.time);
+  const [time, setTime] = useState(timer.time);
 
   useEffect(() => {
-    setTimes(_time.id, time);
-  }, [time, setTimes, _time.id]);
+    setTimes(timer.id, time);
+  }, [time, setTimes, timer.id]);
 
   useEffect(() => {
-    onMount(_time.id);
+    onMount(timer.id);
   }, []);
 
   return (
     <div
       className="flex h-screen w-screen snap-start flex-col items-center justify-between gap-8"
       ref={ref}
-      id={_time.id}
+      id={timer.id}
     >
       <div className="h-14 w-full" />
       <TimerAnimated
         onComplete={onComplete}
         hasMultipleTimes={hasMultipleTimes}
         time={time}
-        timer={_time}
+        timer={timer}
         setTime={setTime}
-        currentId={currentId}
         handleRemoveById={handleRemoveById}
+        onReset={onReset}
       />
       <div className="flex h-14 w-full items-start justify-center">
         <button onClick={onNew}>

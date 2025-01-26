@@ -1,31 +1,30 @@
 import { useContext, useEffect, useRef } from 'react';
+
 import { Circle } from '../objects/Circle';
 import { parseHHMMSStringToMs } from './Timer/utils';
-import Timer from './Timer';
+import { TimerInput } from './Timer';
 import { CircleX } from 'lucide-react';
 import { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubscriber';
 import { AnimationContext } from '../contexts/AnimationContext/context';
-
+import { Timer } from '../App';
 type Props = {
   time: string;
   setTime: React.Dispatch<React.SetStateAction<string>>;
-  currentId: string;
   handleRemoveById: (id: string) => void;
   hasMultipleTimes: boolean;
-  timer: {
-    id: string;
-  };
+  timer: Timer;
   onComplete: (id: string) => void;
+  onReset: (id: string) => void;
 };
 
 export const TimerAnimated = ({
   time,
   setTime,
-  currentId,
   handleRemoveById,
   hasMultipleTimes,
   timer,
   onComplete,
+  onReset,
 }: Props) => {
   const size = 800;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -74,6 +73,7 @@ export const TimerAnimated = ({
       const hasCircleReset = circle.dots.every((dot) => dot.progress === 0);
       if (hasCircleReset) {
         handleComplete?.(timer.id);
+        onReset(timer.id);
       }
     };
 
@@ -81,7 +81,7 @@ export const TimerAnimated = ({
       id: timer.id,
       draw,
       update,
-      reset
+      reset,
     });
 
     subscribe?.(subscriber);
@@ -96,19 +96,18 @@ export const TimerAnimated = ({
       <div className="relative">
         {hasMultipleTimes && (
           <button
-            onClick={() => handleRemoveById(currentId)}
+            onClick={() => handleRemoveById(timer.id)}
             className="absolute right-0 top-0 z-20 -translate-y-1/2 translate-x-1/2"
           >
             <CircleX className="h-8 w-8 text-white" />
           </button>
         )}
-        <Timer
+        <TimerInput
           time={time}
           setTime={setTime}
-          onStart={() => handleStart?.(currentId)}
-          onStop={() => handlePause?.(currentId)}
-          onReset={() => handleReset?.(currentId)}
-          currentId={currentId}
+          onStart={() => handleStart?.(timer.id)}
+          onStop={() => handlePause?.(timer.id)}
+          onReset={() => handleReset?.(timer.id)}
         />
         <canvas
           ref={canvasRef}
