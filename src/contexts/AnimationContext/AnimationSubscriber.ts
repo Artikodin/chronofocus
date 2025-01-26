@@ -11,10 +11,11 @@ export class AnimationSubscriber {
     id: string,
     draw: () => void,
     update: (delta: number) => void,
-    reset: (delta: number) => void
+    reset: (delta: number) => void,
+    isRunning: boolean = false
   ) {
     this.id = id;
-    this.isRunning = false;
+    this.isRunning = isRunning;
     this.isResetting = false;
     this.isStarted = false;
     this.draw = draw;
