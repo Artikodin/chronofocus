@@ -7,13 +7,19 @@ export class AnimationSubscriber {
   update: (delta: number) => void;
   reset: (delta: number) => void;
 
-  constructor(
-    id: string,
-    draw: () => void,
-    update: (delta: number) => void,
-    reset: (delta: number) => void,
-    isRunning: boolean = false
-  ) {
+  constructor({
+    id,
+    draw,
+    update,
+    reset = () => {},
+    isRunning = false,
+  }: {
+    id: string;
+    draw: () => void;
+    update: (delta: number) => void;
+    reset?: (delta: number) => void;
+    isRunning?: boolean;
+  }) {
     this.id = id;
     this.isRunning = isRunning;
     this.isResetting = false;

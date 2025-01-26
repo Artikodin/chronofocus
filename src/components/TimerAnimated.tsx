@@ -77,7 +77,12 @@ export const TimerAnimated = ({
       }
     };
 
-    const subscriber = new AnimationSubscriber(timer.id, draw, update, reset);
+    const subscriber = new AnimationSubscriber({
+      id: timer.id,
+      draw,
+      update,
+      reset
+    });
 
     subscribe?.(subscriber);
 

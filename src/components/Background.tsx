@@ -34,7 +34,13 @@ const Background = () => {
       });
     };
 
-    const subscriber = new AnimationSubscriber('background', draw, update, () => {}, true);
+    const subscriber = new AnimationSubscriber({
+      id: 'background',
+      draw,
+      update,
+      isRunning: true
+    });
+    
     subscribe?.(subscriber);
 
     return () => {

@@ -42,7 +42,12 @@ const AnimationChild = ({ id }: { id: string }) => {
       }
     };
 
-    const subscriber = new AnimationSubscriber(id, draw, update, reset);
+    const subscriber = new AnimationSubscriber({
+      id,
+      draw,
+      update,
+      reset
+    });
 
     subscribe?.(subscriber);
 
