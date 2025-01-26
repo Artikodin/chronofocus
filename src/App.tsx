@@ -84,6 +84,7 @@ function App() {
 
   useEffect(() => {
     if (!isComplete) return;
+    if (completeId !== currentId) return;
 
     const index = times.findIndex((time) => time.id === completeId);
     const length = times.length;
