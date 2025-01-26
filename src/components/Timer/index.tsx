@@ -18,6 +18,8 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
+  console.log(renderTime);
+
   useEffect(() => {
     let intervalId: number;
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -38,7 +38,7 @@ export class Timer {
 
 function App() {
   const id = uuidv4();
-  const timer = new Timer({ time: '000001', id, isVisible: true });
+  const timer = new Timer({ time: '001000', id, isVisible: true });
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
 
@@ -63,7 +63,7 @@ function App() {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
       const id = uuidv4();
-      newTimers.push(new Timer({ time: '000001', id }));
+      newTimers.push(new Timer({ time: '000500', id }));
       return newTimers;
     });
   }, []);
