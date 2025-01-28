@@ -51,9 +51,6 @@ export const TimerAnimated = ({
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    console.log({ size });
-    console.log({ w: width.native });
-
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
