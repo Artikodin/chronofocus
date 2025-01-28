@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
+import { Button } from '../Button';
 
 type Props = {
   time: string;
@@ -123,9 +124,6 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
     }
   }, [remainingMs, startTime]);
 
-  const buttonStyle =
-    'relative px-4 pb-3 rounded-2xl border-white bg-white bg-opacity-5 backdrop-blur-md transition-all ease-in hover:scale-[101%] hover:bg-opacity-10 text-2xl text-white data-[disabled=true]:opacity-20 data-[disabled=true]:pointer-events-none ';
-
   const isDisabled = isRunning && !isPaused;
 
   return (
@@ -142,56 +140,49 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           disabled={isDisabled}
         />
         <div
+          // background
           data-disabled={isDisabled}
-          className="absolute bottom-0 left-0 z-0 h-full w-full rounded-2xl border-2 border-white bg-white bg-opacity-10 opacity-50 backdrop-blur-md transition-all ease-in group-hover:scale-[101%] data-[disabled=true]:opacity-0"
+          className="absolute bottom-0 left-0 z-0 h-full w-full rounded-2xl bg-white bg-opacity-5 shadow-inner shadow-[rgba(255,255,255,0.4)] backdrop-blur-sm transition-all ease-in group-hover:scale-[101%] group-hover:shadow-[rgba(255,255,255,0.5)] data-[disabled=true]:opacity-0"
         ></div>
       </div>
 
       <div className="flex gap-4">
-        <button
-          className={buttonStyle}
+        <Button
           onClick={handleAddTime(1)}
           disabled={isDisabled}
           data-disabled={isDisabled}
+          className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
         >
           +1:00
-        </button>
-        <button
-          className={buttonStyle}
+        </Button>
+        <Button
           onClick={handleAddTime(10)}
           disabled={isDisabled}
           data-disabled={isDisabled}
+          className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
         >
           +10:00
-        </button>
-        <button
-          className={buttonStyle}
+        </Button>
+        <Button
           onClick={handleAddTime(15)}
           disabled={isDisabled}
           data-disabled={isDisabled}
+          className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
         >
           +15:00
-        </button>
+        </Button>
       </div>
 
       {!isRunning ? (
-        <button className={buttonStyle} onClick={handleStart}>
-          start
-        </button>
+        <Button onClick={handleStart}>start</Button>
       ) : (
         <div className="flex gap-4">
           {isPaused ? (
-            <button className={buttonStyle} onClick={handleStart}>
-              start
-            </button>
+            <Button onClick={handleStart}>start</Button>
           ) : (
-            <button className={buttonStyle} onClick={handleStop}>
-              stop
-            </button>
+            <Button onClick={handleStop}>stop</Button>
           )}
-          <button className={buttonStyle} onClick={handleReset}>
-            reset
-          </button>
+          <Button onClick={handleReset}>reset</Button>
         </div>
       )}
     </div>

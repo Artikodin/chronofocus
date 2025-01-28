@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { TimerAnimated } from './TimerAnimated';
-import { CirclePlus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Timer } from '../App';
+import { Button } from './Button';
 
 type Props = {
   timer: Timer;
@@ -38,11 +39,11 @@ export const TimerContainer = ({
 
   return (
     <div
-      className="flex h-screen w-screen snap-start flex-col items-center justify-between gap-8"
+      className="grid h-screen w-screen snap-start grid-rows-[1fr_min-content_1fr] place-content-center"
       ref={ref}
       id={timer.id}
     >
-      <div className="h-14 w-full" />
+      <div />
       <TimerAnimated
         onComplete={onComplete}
         hasMultipleTimes={hasMultipleTimes}
@@ -53,9 +54,12 @@ export const TimerContainer = ({
         onReset={onReset}
       />
       <div className="flex h-14 w-full items-start justify-center">
-        <button onClick={onNew}>
-          <CirclePlus className="h-8 w-8 text-white" />
-        </button>
+        <Button
+          onClick={onNew}
+          className="flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2"
+        >
+          <Plus className="h-8 w-8 text-white" />
+        </Button>
       </div>
     </div>
   );

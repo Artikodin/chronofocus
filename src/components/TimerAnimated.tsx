@@ -3,10 +3,11 @@ import { useContext, useEffect, useRef } from 'react';
 import { Circle } from '../objects/Circle';
 import { parseHHMMSStringToMs } from './Timer/utils';
 import { TimerInput } from './Timer';
-import { CircleX } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubscriber';
 import { AnimationContext } from '../contexts/AnimationContext/context';
 import { Timer } from '../App';
+import { Button } from './Button';
 type Props = {
   time: string;
   setTime: React.Dispatch<React.SetStateAction<string>>;
@@ -92,30 +93,28 @@ export const TimerAnimated = ({
   }, [duration]);
 
   return (
-    <>
-      <div className="relative">
-        {hasMultipleTimes && (
-          <button
-            onClick={() => handleRemoveById(timer.id)}
-            className="absolute right-0 top-0 z-20 -translate-y-1/2 translate-x-1/2"
-          >
-            <CircleX className="h-8 w-8 text-white" />
-          </button>
-        )}
-        <TimerInput
-          time={time}
-          setTime={setTime}
-          onStart={() => handleStart?.(timer.id)}
-          onStop={() => handlePause?.(timer.id)}
-          onReset={() => handleReset?.(timer.id)}
-        />
-        <canvas
-          ref={canvasRef}
-          width={size}
-          height={size}
-          className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
-        />
-      </div>
-    </>
+    <div className="relative h-[800px] w-[800px] place-content-center">
+      {hasMultipleTimes && (
+        <Button
+          onClick={() => handleRemoveById(timer.id)}
+          className="flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2 absolute right-10 top-10 z-10"
+        >
+          <X className="h-8 w-8 text-white" />
+        </Button>
+      )}
+      <TimerInput
+        time={time}
+        setTime={setTime}
+        onStart={() => handleStart?.(timer.id)}
+        onStop={() => handlePause?.(timer.id)}
+        onReset={() => handleReset?.(timer.id)}
+      />
+      <canvas
+        ref={canvasRef}
+        width={size}
+        height={size}
+        className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
+      />
+    </div>
   );
 };

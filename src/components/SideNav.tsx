@@ -19,7 +19,7 @@ const Item = ({ timer, onSelect }: ItemProps) => {
   return (
     <a
       key={timer.id}
-      className="group flex items-center justify-end gap-4"
+      className="group flex items-center justify-end gap-4 cursor-pointer"
       onClick={() => onSelect(timer.id)}
     >
       <div className="text-sm text-white">{formattedTime}</div>
@@ -37,7 +37,7 @@ export const SideNav = ({ timers, onSelect }: Props) => {
   if (!hasMultipleTimes) return null;
 
   return (
-    <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col gap-1">
+    <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col gap-1 z-20">
       {timers.map((timer) => {
         return <Item key={timer.id} timer={timer} onSelect={onSelect} />;
       })}
