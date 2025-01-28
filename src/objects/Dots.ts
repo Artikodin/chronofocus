@@ -29,7 +29,7 @@ export class Dot {
     this.index = index;
 
     this.opacity = 1;
-    this.size = 2;
+    this.size = 2 * (window.devicePixelRatio || 1);
     this.progress = 0;
     this.visible = true;
   }

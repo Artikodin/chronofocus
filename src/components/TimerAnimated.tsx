@@ -8,6 +8,7 @@ import { AnimationSubscriber } from '../contexts/AnimationContext/AnimationSubsc
 import { AnimationContext } from '../contexts/AnimationContext/context';
 import { Timer } from '../App';
 import { Button } from './Button';
+import { useGetWindowSize } from '../hooks/useGetWindowSize';
 type Props = {
   time: string;
   setTime: React.Dispatch<React.SetStateAction<string>>;
@@ -27,7 +28,6 @@ export const TimerAnimated = ({
   onComplete,
   onReset,
 }: Props) => {
-  const size = 800;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const context = useContext(AnimationContext);
@@ -37,17 +37,35 @@ export const TimerAnimated = ({
   const durationMs = parseHHMMSStringToMs(time);
   const duration = durationMs / 1000;
 
+  const { width, dpi } = useGetWindowSize();
+
+  const MAX_SIZE = 750 * dpi.current;
+  const size = Math.min(MAX_SIZE, width.dpi);
+
+  const radius = 0.4 * size;
+  const dotCount = Math.floor(0.07 * size);
+  const centerX = size / 2;
+  const centerY = size / 2;
+  const circle = new Circle(dotCount, radius, centerX, centerY);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    console.log({ size });
+    console.log({ w: width.native });
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    circle.draw(ctx);
+  }, [width.native]);
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
-
-    const radius = 350;
-    const dotCount = 120;
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const circle = new Circle(dotCount, radius, centerX, centerY);
 
     const draw = () => {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -90,14 +108,14 @@ export const TimerAnimated = ({
     return () => {
       unsubscribe?.(timer.id);
     };
-  }, [duration]);
+  }, [duration, width.native]);
 
   return (
-    <div className="relative h-[800px] w-[800px] place-content-center">
+    <div className="relative h-[min(750px,100vh)] w-[min(750px,100vw)] place-content-center">
       {hasMultipleTimes && (
         <Button
           onClick={() => handleRemoveById(timer.id)}
-          className="flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2 absolute right-10 top-10 z-10"
+          className="absolute right-10 top-10 z-10 flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2"
         >
           <X className="h-8 w-8 text-white" />
         </Button>
@@ -113,7 +131,7 @@ export const TimerAnimated = ({
         ref={canvasRef}
         width={size}
         height={size}
-        className="absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
+        className="absolute left-1/2 top-1/2 z-0 aspect-square w-full -translate-x-1/2 -translate-y-1/2"
       />
     </div>
   );
