@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -9,7 +9,6 @@ import { useScroll } from './hooks/useScroll';
 type TimerOptions = {
   time: string;
   id: string;
-  isComplete?: boolean;
   isRunning?: boolean;
   isVisible?: boolean;
   accumulatedTime?: number;
@@ -20,7 +19,6 @@ type TimerOptions = {
 export class Timer {
   time: string;
   id: string;
-  isComplete: boolean;
   isRunning: boolean;
   isVisible: boolean;
   accumulatedTime: number;
@@ -30,7 +28,6 @@ export class Timer {
   constructor({
     time,
     id,
-    isComplete = false,
     isRunning = false,
     isVisible = false,
     accumulatedTime = 0,
@@ -39,7 +36,6 @@ export class Timer {
   }: TimerOptions) {
     this.time = time;
     this.id = id;
-    this.isComplete = isComplete;
     this.isRunning = isRunning;
     this.isVisible = isVisible;
     this.accumulatedTime = accumulatedTime;
@@ -51,7 +47,7 @@ export class Timer {
 function App() {
   const id = uuidv4();
   const timer = new Timer({
-    time: '001000',
+    time: '000001',
     id,
     isVisible: true,
     accumulatedTime: 0,
@@ -61,10 +57,6 @@ function App() {
   });
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
-
-  useEffect(() => {
-    console.log('timers', timers);
-  }, [timers]);
 
   const handleStopTimer = (id: string) => {
     setTimers((prevTimers) => {
@@ -88,7 +80,6 @@ function App() {
   };
 
   const handleStartTimer = (id: string) => {
-    console.log('handleStartTimer', id);
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
       const index = newTimers.findIndex((timer) => timer.id === id);
@@ -228,25 +219,21 @@ function App() {
     },
   });
 
-  const handleRemoveById = useCallback(
-    async (id: string) => {
-      if (timers.length <= 1) return;
+  const handleRemoveById = (id: string) => {
+    if (timers.length <= 1) return;
 
-      const index = timers.findIndex((timer) => timer.id === id);
-      const length = timers.length;
+    const index = timers.findIndex((timer) => timer.id === id);
+    const length = timers.length;
 
-      const nextId = index === length - 1 ? timers[index - 1].id : timers[index + 1].id;
+    const nextId = index === length - 1 ? timers[index - 1].id : timers[index + 1].id;
 
-      setVisible(nextId);
-      scrollTo(nextId, () => {
-        setTimers((prevTimers) => {
-          if (prevTimers.length <= 1) return prevTimers;
-          return prevTimers.filter((timer) => timer.id !== id);
-        });
+    setVisible(nextId);
+    scrollTo(nextId, () => {
+      setTimers((prevTimers) => {
+        return prevTimers.filter((timer) => timer.id !== id);
       });
-    },
-    [timers]
-  );
+    });
+  };
 
   const handleSelect = useCallback((id: string) => {
     setVisible(id);
@@ -258,11 +245,10 @@ function App() {
     scrollTo(id);
   }, []);
 
-  const handleComplete = (id: string) => {
+  const handleAnimationComplete = (id: string) => {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
       const index = newTimers.findIndex((timer) => timer.id === id);
-      newTimers[index].isComplete = true;
 
       const length = newTimers.length;
       const hasNext = index < length - 1;
@@ -279,15 +265,6 @@ function App() {
     });
   };
 
-  const handleReset = (id: string) => {
-    setTimers((prevTimers) => {
-      const newTimers = [...prevTimers];
-      const index = newTimers.findIndex((timer) => timer.id === id);
-      newTimers[index].isComplete = false;
-      return newTimers;
-    });
-  };
-
   const hasMultipleTimes = timers.length > 1;
 
   return (
@@ -295,15 +272,15 @@ function App() {
       {timers.map((timer) => {
         return (
           <TimerContainer
-            onComplete={handleComplete}
+            onAnimationComplete={handleAnimationComplete}
             onMount={handleMount}
             key={timer.id}
             hasMultipleTimes={hasMultipleTimes}
             timer={timer}
             onNew={handleNew}
-            handleRemoveById={handleRemoveById}
-            onResetAnimation={handleReset}
             
+            
+            handleRemoveById={handleRemoveById}
             onAddTime={handleAddTime}
             onKeyDown={handleTimeInput}
             onStart={handleStartTimer}

@@ -49,12 +49,13 @@ export function TimerInput({
 
   const totalMs = parseHHMMSStringToMs(timer.time);
   const remainingMs = totalMs - elapsedMs;
+  const hasRemainingTime = remainingMs > 0;
 
   useEffect(() => {
     if (timer.startTime !== null && remainingMs <= 0) {
       onStop(timer.id);
     }
-  }, [remainingMs, timer.startTime]);
+  }, [hasRemainingTime, timer.startTime]);
 
   const isDisabled = timer.isRunning && !timer.isPaused;
 
