@@ -53,13 +53,25 @@ function App() {
     time: '000001',
     id,
     isVisible: true,
-    accumulatedTime: 0,
-    startTime: 0,
-    isRunning: false,
-    isPaused: false,
   });
 
-  const [timers, setTimers] = useState<Array<Timer>>([timer]);
+  const [timers, setTimers] = useState<Array<Timer>>(() => {
+    const saved = localStorage.getItem('timers');
+    const savedTimers = saved ? JSON.parse(saved) : [timer];
+
+    const resetTimerOption = {
+      startTime: 0,
+      accumulatedTime: 0,
+      isRunning: false,
+      isPaused: false,
+    };
+
+    return savedTimers.map((timer: Timer) => new Timer({ ...timer, ...resetTimerOption }));
+  });
+
+  useEffect(() => {
+    localStorage.setItem('timers', JSON.stringify(timers));
+  }, [timers]);
 
   const handlePauseTimer = (id: string) => {
     setTimers((prevTimers) => {
@@ -228,9 +240,15 @@ function App() {
       const newTimers = [...prevTimers];
 
       const id = uuidv4();
-      newTimers.push(new Timer({ time: '000500', id }));
 
-      return newTimers;
+      const resetVisiblity = newTimers.map((timer) => ({
+        ...timer,
+        isVisible: false,
+      }));
+
+      resetVisiblity.push(new Timer({ time: '000500', id, isVisible: true }));
+
+      return resetVisiblity;
     });
   };
 
@@ -273,8 +291,11 @@ function App() {
   };
 
   const handleMount = (id: string) => {
-    setVisible(id);
-    scrollTo(id);
+    const index = timers.findIndex((timer) => timer.id === id);
+    const isVisible = timers[index].isVisible;
+    if (isVisible) {
+      scrollTo(id);
+    }
   };
 
   const handleAnimationComplete = (id: string) => {
