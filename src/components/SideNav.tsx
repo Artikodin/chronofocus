@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Timer } from '../App';
 import { formatTimerRunning } from './Timer/utils';
 
@@ -12,14 +13,34 @@ type ItemProps = {
 };
 
 const Item = ({ timer, onSelect }: ItemProps) => {
+  const [render, setRender] = useState(0);
+  useEffect(() => {
+    let intervalId: number;
+
+    console.log(render);
+
+    if (timer.startTime !== 0) {
+      intervalId = setInterval(() => {
+        setRender((prev) => prev + 1);
+      }, 500);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [timer.startTime]);
+
   const isActive = timer.isVisible;
 
-  const formattedTime = formatTimerRunning(timer.time, 0);
+  const elapsedMs = timer.startTime
+    ? performance.now() - timer.startTime + timer.accumulatedTime
+    : timer.accumulatedTime;
+  const formattedTime = formatTimerRunning(timer.time, elapsedMs);
 
   return (
     <a
       key={timer.id}
-      className="group flex items-center justify-end gap-4 cursor-pointer"
+      className="group flex cursor-pointer items-center justify-end gap-4"
       onClick={() => onSelect(timer.id)}
     >
       <div className="text-sm text-white">{formattedTime}</div>
@@ -37,7 +58,7 @@ export const SideNav = ({ timers, onSelect }: Props) => {
   if (!hasMultipleTimes) return null;
 
   return (
-    <div className="fixed right-6 top-1/2 flex -translate-y-1/2 flex-col gap-1 z-20">
+    <div className="fixed right-6 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-1">
       {timers.map((timer) => {
         return <Item key={timer.id} timer={timer} onSelect={onSelect} />;
       })}
