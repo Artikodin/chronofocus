@@ -27,6 +27,8 @@ export const TimerAnimated = ({
   timer,
   onComplete,
   onReset,
+  handleAddTime,
+  handleTimeInput,
 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -118,6 +120,9 @@ export const TimerAnimated = ({
         </Button>
       )}
       <TimerInput
+        handleAddTime={handleAddTime}
+        handleTimeInput={handleTimeInput}
+        timer={timer}
         time={time}
         setTime={setTime}
         onStart={() => handleStart?.(timer.id)}

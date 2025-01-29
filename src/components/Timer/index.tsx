@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 import { Button } from '../Button';
@@ -11,22 +11,33 @@ type Props = {
   onReset: () => void;
 };
 
-export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
+export function TimerInput({
+  time,
+  setTime,
+  onStart,
+  onStop,
+  onReset,
+  timer,
+  handleAddTime,
+  handleTimeInput,
+}: Props) {
   const [isFocused, setIsFocused] = useState(false);
+  
   const [startTime, setStartTime] = useState<number | null>(null);
   const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
-  const [renderTime, setRenderTime] = useState<number | null>(null);
+  
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-
-  console.log(renderTime);
-
+  
+  const [render, setRender] = useState(0);
   useEffect(() => {
     let intervalId: number;
 
+    console.log(render);
+
     if (startTime !== null) {
       intervalId = setInterval(() => {
-        setRenderTime(performance.now());
+        setRender((prev) => prev + 1);
       }, 500);
     }
 
@@ -35,51 +46,8 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
     };
   }, [startTime]);
 
-  const handleTimeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      setTime((prev) => prev.slice(0, -1));
-      e.preventDefault();
-      return;
-    }
 
-    if (/^\d$/.test(e.key)) {
-      setTime((prev) => {
-        if (prev.length >= 6) {
-          return prev.slice(1, 6) + e.key;
-        }
-        return prev + e.key;
-      });
-    }
-  };
-
-  const handleAddTime = (time: number) => () => {
-    setTime((prev) => {
-      const hours = +prev.slice(0, -4);
-      const minutes = +prev.slice(2, -2);
-      const seconds = +prev.slice(-2);
-
-      const cappedMinutes = Math.min(60, minutes);
-      const _newMinutes = cappedMinutes + time;
-
-      if (_newMinutes >= 60) {
-        const newHours = hours + 1 > 99 ? 1 : hours + 1;
-        const newMinutes = _newMinutes % 60;
-
-        const paddedHours = newHours.toString().padStart(2, '0');
-        const paddedMinutes = newMinutes.toString().padStart(2, '0');
-        const paddedSeconds = seconds.toString().padStart(2, '0');
-
-        return `${paddedHours}${paddedMinutes}${paddedSeconds}`;
-      }
-
-      const paddedHours = hours.toString().padStart(2, '0');
-      const paddedMinutes = _newMinutes.toString().padStart(2, '0');
-      const paddedSeconds = seconds.toString().padStart(2, '0');
-
-      return `${paddedHours}${paddedMinutes}${paddedSeconds}`;
-    });
-  };
-
+  
   const pause = () => {
     if (!startTime) return;
 
@@ -132,7 +100,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
         <input
           type="text"
           value={isFocused ? formattedRaw : formattedTimer}
-          onKeyDown={handleTimeInput}
+          onKeyDown={handleTimeInput(timer.id)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onChange={() => {}}
@@ -148,7 +116,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
 
       <div className="flex gap-4">
         <Button
-          onClick={handleAddTime(1)}
+          onClick={() => handleAddTime(timer.id, 1)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
@@ -156,7 +124,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           +1:00
         </Button>
         <Button
-          onClick={handleAddTime(10)}
+          onClick={() => handleAddTime(timer.id, 10)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
@@ -164,7 +132,7 @@ export function TimerInput({ time, setTime, onStart, onStop, onReset }: Props) {
           +10:00
         </Button>
         <Button
-          onClick={handleAddTime(15)}
+          onClick={() => handleAddTime(timer.id, 15)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"

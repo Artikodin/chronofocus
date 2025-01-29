@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -41,6 +41,81 @@ function App() {
   const timer = new Timer({ time: '001000', id, isVisible: true });
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
+
+  useEffect(() => {
+    console.log('timers', timers);
+  }, [timers]);
+
+  const handleTimeInput = (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      setTimers((prevTimers) => {
+        const newTimers = [...prevTimers];
+        const index = newTimers.findIndex((timer) => timer.id === id);
+        if (index === -1) return prevTimers;
+
+        const newTime = newTimers[index].time;
+        newTimers[index].time = newTime.slice(0, -1);
+
+        return newTimers;
+      });
+      e.preventDefault();
+      return;
+    }
+
+    if (/^\d$/.test(e.key)) {
+      setTimers((prevTimers) => {
+        const newTimers = [...prevTimers];
+        const index = newTimers.findIndex((timer) => timer.id === id);
+        if (index === -1) return prevTimers;
+
+        const newTime = newTimers[index].time;
+
+        if (newTime.length >= 6) {
+          newTimers[index].time = newTime.slice(1, 6) + e.key;
+        } else {
+          newTimers[index].time = newTime + e.key;
+        }
+
+        return newTimers;
+      });
+    }
+  };
+
+  const handleAddTime = (id: string, time: number) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      const newTime = newTimers[index].time;
+
+      const hours = +newTime.slice(0, -4);
+      const minutes = +newTime.slice(2, -2);
+      const seconds = +newTime.slice(-2);
+
+      const cappedMinutes = Math.min(60, minutes);
+      const _newMinutes = cappedMinutes + time;
+
+      if (_newMinutes >= 60) {
+        const newHours = hours + 1 > 99 ? 1 : hours + 1;
+        const newMinutes = _newMinutes % 60;
+
+        const paddedHours = newHours.toString().padStart(2, '0');
+        const paddedMinutes = newMinutes.toString().padStart(2, '0');
+        const paddedSeconds = seconds.toString().padStart(2, '0');
+
+        newTimers[index].time = `${paddedHours}${paddedMinutes}${paddedSeconds}`;
+        return newTimers;
+      }
+
+      const paddedHours = hours.toString().padStart(2, '0');
+      const paddedMinutes = _newMinutes.toString().padStart(2, '0');
+      const paddedSeconds = seconds.toString().padStart(2, '0');
+
+      newTimers[index].time = `${paddedHours}${paddedMinutes}${paddedSeconds}`;
+      return newTimers;
+    });
+  };
 
   const setVisible = (id: string) => {
     setTimers((prevTimers) =>
@@ -161,6 +236,8 @@ function App() {
             onNew={handleNew}
             handleRemoveById={handleRemoveById}
             onReset={handleReset}
+            handleAddTime={handleAddTime}
+            handleTimeInput={handleTimeInput}
           />
         );
       })}
