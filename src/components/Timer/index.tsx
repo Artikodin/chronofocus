@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 import { Button } from '../Button';
@@ -20,14 +20,12 @@ export function TimerInput({
   timer,
   handleAddTime,
   handleTimeInput,
+  handleResetTimer,
+  handleStartTimer,
+  handleStopTimer,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
   
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [accumulatedTime, setAccumulatedTime] = useState<number>(0);
-  
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   
   const [render, setRender] = useState(0);
   useEffect(() => {
@@ -35,7 +33,7 @@ export function TimerInput({
 
     console.log(render);
 
-    if (startTime !== null) {
+    if (timer.startTime !== null) {
       intervalId = setInterval(() => {
         setRender((prev) => prev + 1);
       }, 500);
@@ -44,55 +42,25 @@ export function TimerInput({
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [startTime]);
+  }, [timer.startTime]);
 
 
-  
-  const pause = () => {
-    if (!startTime) return;
 
-    const currentElapsed = performance.now() - startTime;
-    setAccumulatedTime((prev) => prev + currentElapsed);
-    setStartTime(null);
-  };
+  const elapsedMs = timer.startTime ? performance.now() - timer.startTime + timer.accumulatedTime : timer.accumulatedTime;
 
-  const handleStart = () => {
-    if (remainingMs <= 0) return;
-    setStartTime(performance.now());
-    setIsRunning(true);
-    setIsPaused(false);
-    onStart();
-  };
+  const formattedRaw = formatRawInput(timer.time);
+  const formattedTimer = formatTimerRunning(timer.time, elapsedMs);
 
-  const handleStop = () => {
-    pause();
-    setIsPaused(true);
-    onStop();
-  };
-
-  const handleReset = () => {
-    setStartTime(null);
-    setAccumulatedTime(0);
-    setIsRunning(false);
-    setIsPaused(false);
-    onReset();
-  };
-
-  const elapsedMs = startTime ? performance.now() - startTime + accumulatedTime : accumulatedTime;
-
-  const formattedRaw = formatRawInput(time);
-  const formattedTimer = formatTimerRunning(time, elapsedMs);
-
-  const totalMs = parseHHMMSStringToMs(time);
+  const totalMs = parseHHMMSStringToMs(timer.time);
   const remainingMs = totalMs - elapsedMs;
 
   useEffect(() => {
-    if (startTime !== null && remainingMs <= 0) {
-      pause();
+    if (timer.startTime !== null && remainingMs <= 0) {
+      handleStopTimer();
     }
-  }, [remainingMs, startTime]);
+  }, [remainingMs, timer.startTime]);
 
-  const isDisabled = isRunning && !isPaused;
+  const isDisabled = timer.isRunning && !timer.isPaused;
 
   return (
     <div className="relative z-10 flex flex-col items-center justify-center gap-8">
@@ -141,16 +109,16 @@ export function TimerInput({
         </Button>
       </div>
 
-      {!isRunning ? (
-        <Button onClick={handleStart}>start</Button>
+      {!timer.isRunning ? (
+        <Button onClick={() => handleStartTimer(timer.id)}>start</Button>
       ) : (
         <div className="flex gap-4">
-          {isPaused ? (
-            <Button onClick={handleStart}>start</Button>
+          {timer.isPaused ? (
+            <Button onClick={() => handleStartTimer(timer.id)}>start</Button>
           ) : (
-            <Button onClick={handleStop}>stop</Button>
+            <Button onClick={() => handleStopTimer(timer.id)}>stop</Button>
           )}
-          <Button onClick={handleReset}>reset</Button>
+          <Button onClick={() => handleResetTimer(timer.id)}>reset</Button>
         </div>
       )}
     </div>

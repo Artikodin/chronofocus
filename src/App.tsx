@@ -12,6 +12,9 @@ type TimerOptions = {
   isComplete?: boolean;
   isRunning?: boolean;
   isVisible?: boolean;
+  accumulatedTime?: number;
+  startTime?: number;
+  isPaused?: boolean;
 };
 
 export class Timer {
@@ -20,6 +23,9 @@ export class Timer {
   isComplete: boolean;
   isRunning: boolean;
   isVisible: boolean;
+  accumulatedTime: number;
+  startTime: number;
+  isPaused: boolean;
 
   constructor({
     time,
@@ -27,24 +33,95 @@ export class Timer {
     isComplete = false,
     isRunning = false,
     isVisible = false,
+    accumulatedTime = 0,
+    startTime = 0,
+    isPaused = false,
   }: TimerOptions) {
     this.time = time;
     this.id = id;
     this.isComplete = isComplete;
     this.isRunning = isRunning;
     this.isVisible = isVisible;
+    this.accumulatedTime = accumulatedTime;
+    this.startTime = startTime;
+    this.isPaused = isPaused;
   }
 }
 
 function App() {
   const id = uuidv4();
-  const timer = new Timer({ time: '001000', id, isVisible: true });
+  const timer = new Timer({
+    time: '001000',
+    id,
+    isVisible: true,
+    accumulatedTime: 0,
+    startTime: 0,
+    isRunning: false,
+    isPaused: false,
+  });
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
 
   useEffect(() => {
     console.log('timers', timers);
   }, [timers]);
+
+  const handleStopTimer = (id: string) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      const timerStartTime = newTimers[index].startTime;
+      const timerAccumulatedTime = newTimers[index].accumulatedTime;
+      if (timerStartTime === 0) return prevTimers;
+
+      newTimers[index].isPaused = true;
+      newTimers[index].isRunning = false;
+      newTimers[index].startTime = 0;
+
+      const elapsed = performance.now() - timerStartTime;
+      newTimers[index].accumulatedTime = timerAccumulatedTime + elapsed;
+
+      return newTimers;
+    });
+  };
+
+  const handleStartTimer = (id: string) => {
+    console.log('handleStartTimer', id);
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      const timerStartTime = newTimers[index].startTime;
+      if (timerStartTime !== 0) return prevTimers;
+
+      newTimers[index].startTime = performance.now();
+      newTimers[index].isRunning = true;
+      newTimers[index].isPaused = false;
+
+      return newTimers;
+    });
+  };
+
+  const handleResetTimer = (id: string) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      const timerStartTime = newTimers[index].startTime;
+      if (timerStartTime === 0) return prevTimers;
+
+      newTimers[index].startTime = 0;
+      newTimers[index].isRunning = false;
+      newTimers[index].isPaused = false;
+      newTimers[index].accumulatedTime = 0;
+
+      return newTimers;
+    });
+  };
 
   const handleTimeInput = (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -238,6 +315,9 @@ function App() {
             onReset={handleReset}
             handleAddTime={handleAddTime}
             handleTimeInput={handleTimeInput}
+            handleResetTimer={handleResetTimer}
+            handleStartTimer={handleStartTimer}
+            handleStopTimer={handleStopTimer}
           />
         );
       })}

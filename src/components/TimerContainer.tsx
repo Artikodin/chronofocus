@@ -27,6 +27,9 @@ export const TimerContainer = ({
   onReset,
   handleAddTime,
   handleTimeInput,
+  handleResetTimer,
+  handleStartTimer,
+  handleStopTimer,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const [time, setTime] = useState(timer.time);
@@ -56,6 +59,9 @@ export const TimerContainer = ({
         onReset={onReset}
         handleAddTime={handleAddTime}
         handleTimeInput={handleTimeInput}
+        handleResetTimer={handleResetTimer}
+        handleStartTimer={handleStartTimer}
+        handleStopTimer={handleStopTimer}
       />
       <div className="flex h-14 w-full items-start justify-center">
         <Button
