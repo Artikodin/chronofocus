@@ -71,7 +71,7 @@ export const CircleAnimated = ({ timer, onAnimationComplete, onAnimationReset }:
       circle.updateReset(delta, { duration: 2 });
       circle.draw(ctx);
 
-      const hasCircleReset = circle.dots.every((dot) => dot.progress === 0);
+      const hasCircleReset = circle.dots.every((dot) => dot.progress <= 0.7);
       if (hasCircleReset) {
         handleComplete?.(timer.id);
         onAnimationReset?.(timer.id);
