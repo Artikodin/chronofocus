@@ -202,15 +202,6 @@ function App() {
     );
   };
 
-  const handleSetTime = useCallback((id: string, time: string) => {
-    setTimers((prevTimers) => {
-      const newTimers = [...prevTimers];
-      const index = newTimers.findIndex((timer) => timer.id === id);
-      newTimers[index].time = time;
-      return newTimers;
-    });
-  }, []);
-
   const handleNew = useCallback(() => {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
@@ -309,15 +300,15 @@ function App() {
             key={timer.id}
             hasMultipleTimes={hasMultipleTimes}
             timer={timer}
-            setTimes={handleSetTime}
             onNew={handleNew}
             handleRemoveById={handleRemoveById}
-            onReset={handleReset}
-            handleAddTime={handleAddTime}
-            handleTimeInput={handleTimeInput}
-            handleResetTimer={handleResetTimer}
-            handleStartTimer={handleStartTimer}
-            handleStopTimer={handleStopTimer}
+            onResetAnimation={handleReset}
+            
+            onAddTime={handleAddTime}
+            onKeyDown={handleTimeInput}
+            onStart={handleStartTimer}
+            onStop={handleStopTimer}
+            onReset={handleResetTimer}
           />
         );
       })}

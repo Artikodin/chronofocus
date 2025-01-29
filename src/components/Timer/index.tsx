@@ -2,31 +2,27 @@ import { useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 import { Button } from '../Button';
+import { Timer } from '../../App';
 
 type Props = {
-  time: string;
-  setTime: React.Dispatch<React.SetStateAction<string>>;
-  onStart: () => void;
-  onStop: () => void;
-  onReset: () => void;
+  timer: Timer;
+  onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onAddTime: (id: string, time: number) => void;
+  onStart: (id: string) => void;
+  onStop: (id: string) => void;
+  onReset: (id: string) => void;
 };
 
 export function TimerInput({
-  time,
-  setTime,
+  timer,
+  onKeyDown,
+  onAddTime,
   onStart,
   onStop,
   onReset,
-  timer,
-  handleAddTime,
-  handleTimeInput,
-  handleResetTimer,
-  handleStartTimer,
-  handleStopTimer,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
-  
-  
+
   const [render, setRender] = useState(0);
   useEffect(() => {
     let intervalId: number;
@@ -44,9 +40,9 @@ export function TimerInput({
     };
   }, [timer.startTime]);
 
-
-
-  const elapsedMs = timer.startTime ? performance.now() - timer.startTime + timer.accumulatedTime : timer.accumulatedTime;
+  const elapsedMs = timer.startTime
+    ? performance.now() - timer.startTime + timer.accumulatedTime
+    : timer.accumulatedTime;
 
   const formattedRaw = formatRawInput(timer.time);
   const formattedTimer = formatTimerRunning(timer.time, elapsedMs);
@@ -56,7 +52,7 @@ export function TimerInput({
 
   useEffect(() => {
     if (timer.startTime !== null && remainingMs <= 0) {
-      handleStopTimer();
+      onStop(timer.id);
     }
   }, [remainingMs, timer.startTime]);
 
@@ -68,7 +64,7 @@ export function TimerInput({
         <input
           type="text"
           value={isFocused ? formattedRaw : formattedTimer}
-          onKeyDown={handleTimeInput(timer.id)}
+          onKeyDown={onKeyDown(timer.id)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onChange={() => {}}
@@ -84,7 +80,7 @@ export function TimerInput({
 
       <div className="flex gap-4">
         <Button
-          onClick={() => handleAddTime(timer.id, 1)}
+          onClick={() => onAddTime(timer.id, 1)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
@@ -92,7 +88,7 @@ export function TimerInput({
           +1:00
         </Button>
         <Button
-          onClick={() => handleAddTime(timer.id, 10)}
+          onClick={() => onAddTime(timer.id, 10)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
@@ -100,7 +96,7 @@ export function TimerInput({
           +10:00
         </Button>
         <Button
-          onClick={() => handleAddTime(timer.id, 15)}
+          onClick={() => onAddTime(timer.id, 15)}
           disabled={isDisabled}
           data-disabled={isDisabled}
           className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
@@ -110,15 +106,15 @@ export function TimerInput({
       </div>
 
       {!timer.isRunning ? (
-        <Button onClick={() => handleStartTimer(timer.id)}>start</Button>
+        <Button onClick={() => onStart(timer.id)}>start</Button>
       ) : (
         <div className="flex gap-4">
           {timer.isPaused ? (
-            <Button onClick={() => handleStartTimer(timer.id)}>start</Button>
+            <Button onClick={() => onStart(timer.id)}>start</Button>
           ) : (
-            <Button onClick={() => handleStopTimer(timer.id)}>stop</Button>
+            <Button onClick={() => onStop(timer.id)}>stop</Button>
           )}
-          <Button onClick={() => handleResetTimer(timer.id)}>reset</Button>
+          <Button onClick={() => onReset(timer.id)}>reset</Button>
         </div>
       )}
     </div>

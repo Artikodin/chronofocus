@@ -7,36 +7,36 @@ import { Button } from './Button';
 
 type Props = {
   timer: Timer;
-  setTimes: (index: string, time: string) => void;
   onNew: () => void;
   handleRemoveById: (id: string) => void;
   hasMultipleTimes: boolean;
   onMount: (id: string) => void;
   onComplete: (id: string) => void;
+  onResetAnimation: (id: string) => void;
+
+
+  onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onAddTime: (id: string, time: number) => void;
+  onStart: (id: string) => void;
+  onStop: (id: string) => void;
   onReset: (id: string) => void;
 };
 
 export const TimerContainer = ({
   hasMultipleTimes,
   timer,
-  setTimes,
   onNew,
   handleRemoveById,
   onMount,
   onComplete,
+  onResetAnimation,
+  onKeyDown,
+  onAddTime,
+  onStart,
+  onStop,
   onReset,
-  handleAddTime,
-  handleTimeInput,
-  handleResetTimer,
-  handleStartTimer,
-  handleStopTimer,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [time, setTime] = useState(timer.time);
-
-  useEffect(() => {
-    setTimes(timer.id, time);
-  }, [time, setTimes, timer.id]);
 
   useEffect(() => {
     onMount(timer.id);
@@ -52,16 +52,15 @@ export const TimerContainer = ({
       <TimerAnimated
         onComplete={onComplete}
         hasMultipleTimes={hasMultipleTimes}
-        time={timer.time}
         timer={timer}
-        setTime={setTime}
         handleRemoveById={handleRemoveById}
+        onResetAnimation={onResetAnimation}
+        
+        onKeyDown={onKeyDown}
+        onAddTime={onAddTime}
+        onStart={onStart}
+        onStop={onStop}
         onReset={onReset}
-        handleAddTime={handleAddTime}
-        handleTimeInput={handleTimeInput}
-        handleResetTimer={handleResetTimer}
-        handleStartTimer={handleStartTimer}
-        handleStopTimer={handleStopTimer}
       />
       <div className="flex h-14 w-full items-start justify-center">
         <Button

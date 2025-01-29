@@ -10,28 +10,30 @@ import { Timer } from '../App';
 import { Button } from './Button';
 import { useGetWindowSize } from '../hooks/useGetWindowSize';
 type Props = {
-  time: string;
-  setTime: React.Dispatch<React.SetStateAction<string>>;
   handleRemoveById: (id: string) => void;
   hasMultipleTimes: boolean;
   timer: Timer;
   onComplete: (id: string) => void;
+  onResetAnimation: (id: string) => void;
+
+  onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onAddTime: (id: string, time: number) => void;
+  onStart: (id: string) => void;
+  onStop: (id: string) => void;
   onReset: (id: string) => void;
 };
 
 export const TimerAnimated = ({
-  time,
-  setTime,
   handleRemoveById,
   hasMultipleTimes,
   timer,
   onComplete,
+  onResetAnimation,
+  onKeyDown,
+  onAddTime,
+  onStart,
+  onStop,
   onReset,
-  handleAddTime,
-  handleTimeInput,
-  handleResetTimer,
-  handleStartTimer,
-  handleStopTimer,
 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -39,7 +41,7 @@ export const TimerAnimated = ({
   const { subscribe, unsubscribe, handleStart, handlePause, handleReset, handleComplete } =
     context || {};
 
-  const durationMs = parseHHMMSStringToMs(time);
+  const durationMs = parseHHMMSStringToMs(timer.time);
   const duration = durationMs / 1000;
 
   const { width, dpi } = useGetWindowSize();
@@ -94,7 +96,7 @@ export const TimerAnimated = ({
       const hasCircleReset = circle.dots.every((dot) => dot.progress === 0);
       if (hasCircleReset) {
         handleComplete?.(timer.id);
-        onReset(timer.id);
+        onResetAnimation(timer.id);
       }
     };
 
@@ -123,17 +125,21 @@ export const TimerAnimated = ({
         </Button>
       )}
       <TimerInput
-        handleAddTime={handleAddTime}
-        handleTimeInput={handleTimeInput}
         timer={timer}
-        time={time}
-        setTime={setTime}
-        onStart={() => handleStart?.(timer.id)}
-        onStop={() => handlePause?.(timer.id)}
-        onReset={() => handleReset?.(timer.id)}
-        handleResetTimer={handleResetTimer}
-        handleStartTimer={handleStartTimer}
-        handleStopTimer={handleStopTimer}
+        onStart={(_id) => {
+          handleStart?.(_id);
+          onStart(_id);
+        }}
+        onStop={(_id) => {
+          handlePause?.(_id);
+          onStop(_id);
+        }}
+        onReset={(_id) => {
+          handleReset?.(_id);
+          onReset(_id);
+        }}
+        onKeyDown={onKeyDown}
+        onAddTime={onAddTime}
       />
       <canvas
         ref={canvasRef}
