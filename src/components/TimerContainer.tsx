@@ -15,11 +15,11 @@ type Props = {
   onMount: (id: string) => void;
   onAnimationComplete: (id: string) => void;
   onAnimationReset?: (id: string) => void;
-
+  onTimerComplete: (id: string) => void;  
   onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onAddTime: (id: string, time: number) => void;
   onStart: (id: string) => void;
-  onStop: (id: string) => void;
+  onPause: (id: string) => void;
   onReset: (id: string) => void;
 };
 
@@ -33,8 +33,10 @@ export const TimerContainer = ({
   onKeyDown,
   onAddTime,
   onStart,
-  onStop,
+  onPause,
+  onTimerComplete,
   onReset,
+  onAnimationReset,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -50,9 +52,9 @@ export const TimerContainer = ({
     onStart(id);
   };
 
-  const handleStopTimer = (id: string) => {
+  const handlePauseTimer = (id: string) => {
     handlePause?.(id);
-    onStop(id);
+    onPause(id);
   };
 
   const handleResetTimer = (id: string) => {
@@ -78,13 +80,18 @@ export const TimerContainer = ({
         )}
         <TimerInput
           timer={timer}
+          onTimerComplete={onTimerComplete}
           onStart={handleStartTimer}
-          onStop={handleStopTimer}
+          onPause={handlePauseTimer}
           onReset={handleResetTimer}
           onKeyDown={onKeyDown}
           onAddTime={onAddTime}
         />
-        <CircleAnimated onAnimationComplete={onAnimationComplete} timer={timer} />
+        <CircleAnimated
+          onAnimationComplete={onAnimationComplete}
+          timer={timer}
+          onAnimationReset={onAnimationReset}
+        />
       </div>
 
       <div className="flex h-14 w-full items-start justify-center">

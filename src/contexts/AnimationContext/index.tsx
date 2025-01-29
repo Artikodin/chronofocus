@@ -11,11 +11,11 @@ export const AnimationProvider = ({ children }: Props) => {
   const [version, setVersion] = useState(0);
   const subscribersRef = useRef(new Map<string, AnimationSubscriber>());
 
-  console.log(version);
-
   const { handleStartAnimation, handleStopAnimation } = useAnimation(subscribersRef.current);
 
   const subscribe = (sub: AnimationSubscriber) => {
+    console.log(version);
+
     subscribersRef.current.set(sub.id, sub);
     setVersion((prev) => prev + 1);
   };

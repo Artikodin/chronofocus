@@ -61,8 +61,6 @@ export const CircleAnimated = ({ timer, onAnimationComplete, onAnimationReset }:
 
       const hasCircleComplete = circle.dots.every((dot) => dot.progress === 1);
       if (hasCircleComplete) {
-        console.log('stopping timer - circle complete');
-
         handleComplete?.(timer.id);
         onAnimationComplete?.(timer.id);
       }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
@@ -14,6 +14,7 @@ type TimerOptions = {
   accumulatedTime?: number;
   startTime?: number;
   isPaused?: boolean;
+  isResetting?: boolean;
 };
 
 export class Timer {
@@ -24,7 +25,7 @@ export class Timer {
   accumulatedTime: number;
   startTime: number;
   isPaused: boolean;
-
+  isResetting: boolean;
   constructor({
     time,
     id,
@@ -33,6 +34,7 @@ export class Timer {
     accumulatedTime = 0,
     startTime = 0,
     isPaused = false,
+    isResetting = false,
   }: TimerOptions) {
     this.time = time;
     this.id = id;
@@ -41,6 +43,7 @@ export class Timer {
     this.accumulatedTime = accumulatedTime;
     this.startTime = startTime;
     this.isPaused = isPaused;
+    this.isResetting = isResetting;
   }
 }
 
@@ -58,7 +61,7 @@ function App() {
 
   const [timers, setTimers] = useState<Array<Timer>>([timer]);
 
-  const handleStopTimer = (id: string) => {
+  const handlePauseTimer = (id: string) => {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
       const index = newTimers.findIndex((timer) => timer.id === id);
@@ -69,11 +72,28 @@ function App() {
       if (timerStartTime === 0) return prevTimers;
 
       newTimers[index].isPaused = true;
-      newTimers[index].isRunning = false;
       newTimers[index].startTime = 0;
 
       const elapsed = performance.now() - timerStartTime;
       newTimers[index].accumulatedTime = timerAccumulatedTime + elapsed;
+
+      return newTimers;
+    });
+  };
+
+  const handleCompleteTimer = (id: string) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      const timerStartTime = newTimers[index].startTime;
+      const timerAccumulatedTime = newTimers[index].accumulatedTime;
+      if (timerStartTime === 0) return prevTimers;
+
+      const elapsed = performance.now() - timerStartTime;
+      newTimers[index].accumulatedTime = timerAccumulatedTime + elapsed;
+      newTimers[index].startTime = 0;
 
       return newTimers;
     });
@@ -102,13 +122,23 @@ function App() {
       const index = newTimers.findIndex((timer) => timer.id === id);
       if (index === -1) return prevTimers;
 
-      const timerStartTime = newTimers[index].startTime;
-      if (timerStartTime === 0) return prevTimers;
-
       newTimers[index].startTime = 0;
       newTimers[index].isRunning = false;
-      newTimers[index].isPaused = false;
+      newTimers[index].isPaused = true;
       newTimers[index].accumulatedTime = 0;
+      newTimers[index].isResetting = true;
+
+      return newTimers;
+    });
+  };
+
+  const handleAnimationReset = (id: string) => {
+    setTimers((prevTimers) => {
+      const newTimers = [...prevTimers];
+      const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
+
+      newTimers[index].isResetting = false;
 
       return newTimers;
     });
@@ -193,14 +223,16 @@ function App() {
     );
   };
 
-  const handleNew = useCallback(() => {
+  const handleNew = () => {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
+
       const id = uuidv4();
       newTimers.push(new Timer({ time: '000500', id }));
+
       return newTimers;
     });
-  }, []);
+  };
 
   const { scrollTo } = useScroll({
     onEnd: () => {
@@ -235,20 +267,21 @@ function App() {
     });
   };
 
-  const handleSelect = useCallback((id: string) => {
+  const handleSelect = (id: string) => {
     setVisible(id);
     scrollTo(id);
-  }, []);
+  };
 
-  const handleMount = useCallback((id: string) => {
+  const handleMount = (id: string) => {
     setVisible(id);
     scrollTo(id);
-  }, []);
+  };
 
   const handleAnimationComplete = (id: string) => {
     setTimers((prevTimers) => {
       const newTimers = [...prevTimers];
       const index = newTimers.findIndex((timer) => timer.id === id);
+      if (index === -1) return prevTimers;
 
       const length = newTimers.length;
       const hasNext = index < length - 1;
@@ -269,23 +302,23 @@ function App() {
 
   return (
     <>
-      {timers.map((timer) => {
+      {timers.map((_timer) => {
         return (
           <TimerContainer
             onAnimationComplete={handleAnimationComplete}
             onMount={handleMount}
-            key={timer.id}
             hasMultipleTimes={hasMultipleTimes}
-            timer={timer}
+            key={_timer.id}
+            timer={_timer}
             onNew={handleNew}
-            
-            
+            onTimerComplete={handleCompleteTimer}
             handleRemoveById={handleRemoveById}
             onAddTime={handleAddTime}
             onKeyDown={handleTimeInput}
             onStart={handleStartTimer}
-            onStop={handleStopTimer}
+            onPause={handlePauseTimer}
             onReset={handleResetTimer}
+            onAnimationReset={handleAnimationReset}
           />
         );
       })}

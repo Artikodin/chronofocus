@@ -6,19 +6,21 @@ import { Timer } from '../../App';
 
 type Props = {
   timer: Timer;
+  onTimerComplete: (id: string) => void;
   onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onAddTime: (id: string, time: number) => void;
   onStart: (id: string) => void;
-  onStop: (id: string) => void;
+  onPause: (id: string) => void;
   onReset: (id: string) => void;
 };
 
 export function TimerInput({
   timer,
+  onTimerComplete,
   onKeyDown,
   onAddTime,
   onStart,
-  onStop,
+  onPause,
   onReset,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
@@ -29,7 +31,7 @@ export function TimerInput({
 
     console.log(render);
 
-    if (timer.startTime !== null) {
+    if (timer.startTime !== 0) {
       intervalId = setInterval(() => {
         setRender((prev) => prev + 1);
       }, 500);
@@ -52,12 +54,13 @@ export function TimerInput({
   const hasRemainingTime = remainingMs > 0;
 
   useEffect(() => {
-    if (timer.startTime !== null && remainingMs <= 0) {
-      onStop(timer.id);
+    if (timer.startTime !== 0 && !hasRemainingTime) {
+      onTimerComplete(timer.id);
     }
   }, [hasRemainingTime, timer.startTime]);
 
   const isDisabled = timer.isRunning && !timer.isPaused;
+  const isResetting = timer.isResetting;
 
   return (
     <div className="relative z-10 flex flex-col items-center justify-center gap-8">
@@ -107,13 +110,27 @@ export function TimerInput({
       </div>
 
       {!timer.isRunning ? (
-        <Button onClick={() => onStart(timer.id)}>start</Button>
+        <Button
+          onClick={() => onStart(timer.id)}
+          disabled={isResetting}
+          data-disabled={isResetting}
+          className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
+        >
+          start
+        </Button>
       ) : (
         <div className="flex gap-4">
           {timer.isPaused ? (
-            <Button onClick={() => onStart(timer.id)}>start</Button>
+            <Button
+              onClick={() => onStart(timer.id)}
+              disabled={isResetting}
+              data-disabled={isResetting}
+              className="data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-20"
+            >
+              start
+            </Button>
           ) : (
-            <Button onClick={() => onStop(timer.id)}>stop</Button>
+            <Button onClick={() => onPause(timer.id)}>pause</Button>
           )}
           <Button onClick={() => onReset(timer.id)}>reset</Button>
         </div>
