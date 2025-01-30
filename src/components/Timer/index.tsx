@@ -67,6 +67,8 @@ export function TimerInput({
       <div className="group relative">
         <input
           type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={isFocused ? formattedRaw : formattedTimer}
           onKeyDown={onKeyDown(timer.id)}
           onFocus={() => setIsFocused(true)}

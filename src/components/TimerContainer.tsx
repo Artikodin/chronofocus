@@ -64,7 +64,7 @@ export const TimerContainer = ({
 
   return (
     <div
-      className="grid h-screen w-screen snap-start grid-rows-[1fr_min-content_1fr] place-content-center"
+      className="grid h-[100dvh] w-[100dvw] snap-start grid-rows-[1fr_min-content_1fr] place-content-center"
       ref={ref}
       id={timer.id}
     >
