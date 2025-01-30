@@ -70,7 +70,7 @@ export const TimerContainer = ({
       id={timer.id}
     >
       <div />
-      <div className="relative h-[500px] w-screen place-content-center sm:h-[min(750px,100dvh)] sm:w-[min(750px,100dvw)]">
+      <div className="relative h-[500px] w-screen grid place-content-center sm:h-[min(750px,100dvh)] sm:w-[min(750px,100dvw)]">
         {hasMultipleTimes && (
           <Button
             onClick={() => handleRemoveById(timer.id)}

@@ -86,14 +86,14 @@ export function TimerInput({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             onChange={() => {}}
-            className="relative z-10 h-28 w-96 bg-transparent pb-14 pt-4 text-center text-8xl text-white outline-none"
+            className="relative z-10 h-32 w-96 bg-transparent pb-14 pt-4 text-center text-8xl text-white outline-none"
             disabled={isDisabled}
           />
         </form>
         <div
           // background
           data-disabled={isDisabled}
-          className="absolute bottom-0 left-0 z-0 h-full w-full rounded-2xl bg-white bg-opacity-5 shadow-inner shadow-[rgba(255,255,255,0.4)] backdrop-blur-sm transition-all ease-in group-hover:scale-[101%] group-hover:shadow-[rgba(255,255,255,0.5)] data-[disabled=true]:opacity-0"
+          className="absolute bottom-0 left-0 z-0 h-28 w-full rounded-2xl bg-white bg-opacity-5 shadow-inner shadow-[rgba(255,255,255,0.4)] backdrop-blur-sm transition-all ease-in group-hover:scale-[101%] group-hover:shadow-[rgba(255,255,255,0.5)] data-[disabled=true]:opacity-0"
         ></div>
       </div>
 
