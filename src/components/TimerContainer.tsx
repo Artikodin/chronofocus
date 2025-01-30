@@ -15,12 +15,13 @@ type Props = {
   onMount: (id: string) => void;
   onAnimationComplete: (id: string) => void;
   onAnimationReset?: (id: string) => void;
-  onTimerComplete: (id: string) => void;  
+  onTimerComplete: (id: string) => void;
   onKeyDown: (id: string) => (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onAddTime: (id: string, time: number) => void;
   onStart: (id: string) => void;
   onPause: (id: string) => void;
   onReset: (id: string) => void;
+  onSubmit: (id: string) => void;
 };
 
 export const TimerContainer = ({
@@ -69,12 +70,12 @@ export const TimerContainer = ({
       id={timer.id}
     >
       <div />
-      <div className="relative h-[500px] w-screen sm:h-[min(750px,100dvh)] sm:w-[min(750px,100dvw)] place-content-center">
+      <div className="relative h-[500px] w-screen place-content-center sm:h-[min(750px,100dvh)] sm:w-[min(750px,100dvw)]">
         {hasMultipleTimes && (
           <Button
             onClick={() => handleRemoveById(timer.id)}
             icon
-            className="absolute right-10 -top-10 sm:top-10 z-10"
+            className="absolute -top-10 right-10 z-10 sm:top-10"
           >
             <X className="h-8 w-8 text-white" />
           </Button>
@@ -87,6 +88,7 @@ export const TimerContainer = ({
           onReset={handleResetTimer}
           onKeyDown={onKeyDown}
           onAddTime={onAddTime}
+          onSubmit={handleStartTimer}
         />
         <CircleAnimated
           onAnimationComplete={onAnimationComplete}
@@ -96,10 +98,7 @@ export const TimerContainer = ({
       </div>
 
       <div className="flex h-14 w-full items-start justify-center">
-        <Button
-          onClick={onNew}
-          icon
-        >
+        <Button onClick={onNew} icon>
           <Plus className="h-8 w-8 text-white" />
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 import { formatRawInput, formatTimerRunning, parseHHMMSStringToMs } from './utils';
 import { Button } from '../Button';
@@ -12,6 +12,7 @@ type Props = {
   onStart: (id: string) => void;
   onPause: (id: string) => void;
   onReset: (id: string) => void;
+  onSubmit: (id: string) => void;
 };
 
 export function TimerInput({
@@ -22,7 +23,9 @@ export function TimerInput({
   onStart,
   onPause,
   onReset,
+  onSubmit,
 }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = useState(false);
 
   const [render, setRender] = useState(0);
@@ -59,24 +62,34 @@ export function TimerInput({
     }
   }, [hasRemainingTime, timer.startTime]);
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
+    onSubmit(timer.id);
+  };
+
   const isDisabled = timer.isRunning && !timer.isPaused;
   const isResetting = timer.isResetting;
 
   return (
     <div className="relative z-10 flex flex-col items-center justify-center gap-8">
       <div className="group relative">
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={isFocused ? formattedRaw : formattedTimer}
-          onKeyDown={onKeyDown(timer.id)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          onChange={() => {}}
-          className="relative z-10 h-28 w-96 bg-transparent pb-14 pt-4 text-center text-8xl text-white outline-none"
-          disabled={isDisabled}
-        />
+        <form onSubmit={handleSubmit}>
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="numeric"
+            value={isFocused ? formattedRaw : formattedTimer}
+            onKeyDown={onKeyDown(timer.id)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onChange={() => {}}
+            className="relative z-10 h-28 w-96 bg-transparent pb-14 pt-4 text-center text-8xl text-white outline-none"
+            disabled={isDisabled}
+          />
+        </form>
         <div
           // background
           data-disabled={isDisabled}
