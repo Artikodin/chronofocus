@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import Background from './components/Background';
 import { TimerContainer } from './components/TimerContainer';
 import { SideNav } from './components/SideNav';
 import { useScroll } from './hooks/useScroll';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 type TimerOptions = {
   time: string;
@@ -68,6 +69,8 @@ function App() {
 
     return savedTimers.map((timer: Timer) => new Timer({ ...timer, ...resetTimerOption }));
   });
+
+  const query = useMediaQuery();
 
   useEffect(() => {
     localStorage.setItem('timers', JSON.stringify(timers));
@@ -345,7 +348,7 @@ function App() {
       })}
 
       <SideNav timers={timers} onSelect={handleSelect} />
-      <Background />
+      {query !== 'sm' && <Background />}
     </>
   );
 }

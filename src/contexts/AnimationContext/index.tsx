@@ -14,7 +14,7 @@ export const AnimationProvider = ({ children }: Props) => {
   const { handleStartAnimation, handleStopAnimation } = useAnimation(subscribersRef.current);
 
   const subscribe = (sub: AnimationSubscriber) => {
-    console.log(version);
+    // console.log(version);
 
     subscribersRef.current.set(sub.id, sub);
     setVersion((prev) => prev + 1);
