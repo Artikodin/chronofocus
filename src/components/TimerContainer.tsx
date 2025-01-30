@@ -21,7 +21,7 @@ type Props = {
   onStart: (id: string) => void;
   onPause: (id: string) => void;
   onReset: (id: string) => void;
-  onSubmit: (id: string) => void;
+  onSubmit?: (id: string) => void;
 };
 
 export const TimerContainer = ({
