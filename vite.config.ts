@@ -14,7 +14,7 @@ const PWA_CONFIG: Partial<VitePWAOptions> = {
     start_url: '.',
     display: 'standalone',
     background_color: '#000000',
-    theme_color: '#ffffff',
+    theme_color: '#000000',
     icons: [
       {
         src: '/android-chrome-192x192.png',
