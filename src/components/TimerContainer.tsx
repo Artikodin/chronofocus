@@ -69,11 +69,12 @@ export const TimerContainer = ({
       id={timer.id}
     >
       <div />
-      <div className="relative h-[min(750px,100vh)] w-[min(750px,100vw)] place-content-center">
+      <div className="relative h-[500px] w-screen sm:h-[min(750px,100dvh)] sm:w-[min(750px,100dvw)] place-content-center">
         {hasMultipleTimes && (
           <Button
             onClick={() => handleRemoveById(timer.id)}
-            className="absolute right-10 top-10 z-10 flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2"
+            icon
+            className="absolute right-10 -top-10 sm:top-10 z-10"
           >
             <X className="h-8 w-8 text-white" />
           </Button>
@@ -97,7 +98,7 @@ export const TimerContainer = ({
       <div className="flex h-14 w-full items-start justify-center">
         <Button
           onClick={onNew}
-          className="flex items-center justify-center gap-2 rounded-[9999px] px-2 pb-2 pt-2"
+          icon
         >
           <Plus className="h-8 w-8 text-white" />
         </Button>
